@@ -4065,10 +4065,25 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
     std::vector<double> minLimits;
     std::vector<double> maxLimits;
 
+    bool approach = params.mov_specs.approach;
+    bool retreat = params.mov_specs.retreat;
+
+    std::vector<double> approach_retreat;
+    switch(mov_type)
+    {
+    case 0: // pick
+        if(approach){approach_retreat = params.mov_specs.pre_grasp_approach;}
+        if(retreat){approach_retreat = params.mov_specs.post_grasp_retreat;}
+        break;
+    case 1: // place
+        if(approach){approach_retreat = params.mov_specs.pre_place_approach;}
+        if(retreat){approach_retreat = params.mov_specs.post_place_retreat;}
+        break;
+    }
+
+
     std::vector<double> initArmPosture(initPosture.begin(),initPosture.begin()+joints_arm);
 
-
-    double a0;
     double Lu;
     double Ll;
     double Lh;
@@ -4081,7 +4096,6 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
         break;
     // right arm
     case 1:
-        a0 = this->DH_rightArm.a.at(0);
         Lu = this->DH_rightArm.d.at(2);
         Ll = this->DH_rightArm.d.at(4);
         Lh = this->DH_rightArm.d.at(6);
@@ -4090,7 +4104,6 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
         break;
     // left arm
     case 2:
-        a0 = this->DH_leftArm.a.at(0);
         Lu = this->DH_leftArm.d.at(2);
         Ll = this->DH_leftArm.d.at(4);
         Lh = this->DH_leftArm.d.at(6);
@@ -4100,11 +4113,31 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
     }
 
     //TO DO::::::::::::::::::::::::::::::::::::::::ADAPTAR PARA O RETREAT E APPROACH
-    double max_ext = a0 + Lh + Ll + Lu;
+    double max_ext = Lh + Ll + Lu;
 
-    if(sqrt(pow(target.at(0) - this->shPos.at(0),2)+
-            pow(target.at(1) - this->shPos.at(1),2)+
-            pow(target.at(2) - this->shPos.at(2),2)) >= max_ext)
+    std::vector<double> shPos;
+    this->getShpos(shPos);
+
+    Vector3d tar_pos(target.at(0),target.at(1),target.at(2));
+
+
+    if(approach || retreat)
+    {
+        std::vector<double> rpy = {target.at(3), target.at(4), target.at(5)};
+        Matrix3d Rot_tar;
+        this->RPY_matrix(rpy,Rot_tar);
+
+        double dist = approach_retreat.at(3);
+        Vector3d v(approach_retreat.at(0), approach_retreat.at(1), approach_retreat.at(2));
+        Vector3d vv = Rot_tar * v;
+
+        tar_pos = tar_pos + dist * vv;
+    }
+
+
+    if(sqrt(pow(tar_pos(0) - this->shPos.at(0),2)+
+            pow(tar_pos(1) - this->shPos.at(1),2)+
+            pow(tar_pos(2) - this->shPos.at(2),2)) >= max_ext)
     {
         throw string("The movement to be planned goes out of the reacheble workspace");
     }
@@ -5616,8 +5649,10 @@ planning_result_ptr HUMPlanner::plan_move(hump_params &params, std::vector<doubl
         {
             res->status = 0;
             res->status_msg = string("HUMP: trajectory planned successfully ");
+
             res->time_steps.clear();
-            res->trajectory_stages.clear(); res->trajectory_descriptions.clear();
+            res->trajectory_stages.clear();
+            res->trajectory_descriptions.clear();
             res->velocity_stages.clear();
             res->acceleration_stages.clear();
 
@@ -5625,7 +5660,8 @@ planning_result_ptr HUMPlanner::plan_move(hump_params &params, std::vector<doubl
             MatrixXd traj; MatrixXd vel; MatrixXd acc;
             double timestep = this->getAcceleration(steps,params,initPosture,finalPosture_ext,traj,vel,acc,mod);
             res->time_steps.push_back(timestep);
-            res->trajectory_stages.push_back(traj); res->trajectory_descriptions.push_back("plan");
+            res->trajectory_stages.push_back(traj);
+            res->trajectory_descriptions.push_back("plan");
             res->velocity_stages.push_back(vel);
             res->acceleration_stages.push_back(acc);
         }
@@ -5638,7 +5674,6 @@ planning_result_ptr HUMPlanner::plan_move(hump_params &params, std::vector<doubl
 
 int HUMPlanner::getSteps(std::vector<double> &maxLimits, std::vector<double> &minLimits, std::vector<double> &initPosture, std::vector<double> &finalPosture)
 {
-
     int n_steps;
 
     VectorXd max = VectorXd::Map(maxLimits.data(), maxLimits.size());
