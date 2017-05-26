@@ -261,17 +261,6 @@ public:
      */
     HumanHand getHumanHand();
 
-    /**
-     * @brief setShpos
-     * @param shPos
-     */
-    void setShpos(std::vector<double>& shPos);
-
-    /**
-     * @brief getShpos
-     * @param shPos
-     */
-    void getShpos(std::vector<double>& shPos);
 
     /**
      * @brief plan_pick
@@ -315,7 +304,10 @@ private:
     // scenario info
     vector<objectPtr> obstacles; /**< obstacles in the scenario */
     // humanoid info
-    std::vector<double> shPos; /**< position of the shoulder of the humanoid: shPos(0)=x, shPos(1)=y, shPos(2)=z */
+    std::vector<double> shPose; /**< pose of the shoulder of the humanoid: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw */
+    std::vector<double> elPose; /**< pose of the elbow of the humanoid: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw  */
+    std::vector<double> wrPose; /**< pose of the wrist of the humanoid: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw  */
+    std::vector<double> haPose; /**< pose of the hand of the humanoid: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw  */
     Matrix4d matWorldToRightArm; /**< transformation matrix from the fixed world frame and the reference frame of the right arm (positions are in [mm]) */
     Matrix4d matRightHand;/**< trabsformation matrix from the last joint of the right arm and the palm of the right hand (positions are in [mm]) */
     std::vector<double> minRightLimits; /**< minimum right limits */
@@ -340,26 +332,30 @@ private:
 
     /**
      * @brief setBoundaryConditions
+     * @param mov_type
      * @param params
      * @param steps
      * @param initPosture
      * @param finalPosture
      * @param mod
+     * @return
      */
-    void setBoundaryConditions(hump_params& params, int steps, std::vector<double>& initPosture, std::vector<double>& finalPosture, int mod=0);
-
+    bool setBoundaryConditions(int mov_type, hump_params& params, int steps, std::vector<double>& initPosture, std::vector<double>& finalPosture, int mod=0);
 
     /**
      * @brief directTrajectory
+     * @param mov_type
      * @param steps
      * @param tols
      * @param initPosture
      * @param finalPosture
      * @param timestep
      * @param Traj
+     * @param vel_app_ret
      * @param mod
+     * @return
      */
-    void directTrajectory(int steps, hump_params& tols, std::vector<double>& initPosture, std::vector<double>& finalPosture, double timestep, MatrixXd& Traj, int mod);
+    bool directTrajectory(int mov_type, int steps, hump_params& tols, std::vector<double>& initPosture, std::vector<double>& finalPosture, double timestep, MatrixXd& Traj, MatrixXd &vel_app_ret, int mod);
 
     /**
      * @brief directTrajectoryNoBound
@@ -378,9 +374,11 @@ private:
      * @param finalPosture
      * @param timestep
      * @param Vel
+     * @param vel_app_ret
      * @param mod
+     * @return
      */
-    void directVelocity(int steps,hump_params& tols, std::vector<double>& initPosture, std::vector<double>& finalPosture, double timestep,MatrixXd& Vel, int mod);
+    bool directVelocity(int steps, hump_params& tols, std::vector<double>& initPosture, std::vector<double>& finalPosture, double timestep, MatrixXd& Vel, MatrixXd &vel_app_ret, int mod);
 
     /**
      * @brief directAcceleration
@@ -390,9 +388,11 @@ private:
      * @param finalPosture
      * @param timestep
      * @param Acc
+     * @param vel_app_ret
      * @param mod
+     * @return
      */
-    void directAcceleration(int steps,hump_params& tols, std::vector<double>& initPosture, std::vector<double>& finalPosture, double timestep, MatrixXd& Acc,int mod);
+    bool directAcceleration(int steps,hump_params& tols, std::vector<double>& initPosture, std::vector<double>& finalPosture, double timestep, MatrixXd& Acc,MatrixXd &vel_app_ret,int mod);
 
     /**
      * @brief backForthTrajectory
@@ -435,31 +435,40 @@ private:
 
     /**
      * @brief getTrajectory
+     * @param mov_type
      * @param steps
      * @param tols
      * @param initPosture
      * @param finalPosture
      * @param bouncePosture
      * @param traj
+     * @param vel_app_ret
+     * @param success
      * @param mod
      * @return
      */
-    double getTrajectory(int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture, MatrixXd &traj,int mod);
+    double getTrajectory(int mov_type,int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture,
+                         MatrixXd &traj,MatrixXd &vel_app_ret,bool &success,int mod);
 
     /**
      * @brief getTrajectory
+     * @param mov_type
      * @param steps
      * @param tols
      * @param initPosture
      * @param finalPosture
      * @param traj
+     * @param vel_app_ret
+     * @param success
      * @param mod
      * @return
      */
-    double getTrajectory(int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj,int mod);
+    double getTrajectory(int mov_type,int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture,
+                         MatrixXd &traj, MatrixXd &vel_app_ret,bool &success, int mod);
 
     /**
      * @brief getVelocity
+     * @param mov_type
      * @param steps
      * @param tols
      * @param initPosture
@@ -467,26 +476,32 @@ private:
      * @param bouncePosture
      * @param traj
      * @param vel
+     * @param vel_app_ret
+     * @param success
      * @param mod
      * @return
      */
-    double getVelocity(int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture, MatrixXd &traj, MatrixXd &vel,int mod);
-
+    double getVelocity(int mov_type, int steps, hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture,
+                       MatrixXd &traj, MatrixXd &vel, MatrixXd &vel_app_ret, bool &success, int mod);
     /**
      * @brief getVelocity
+     * @param mov_type
      * @param steps
      * @param tols
      * @param initPosture
      * @param finalPosture
      * @param traj
      * @param vel
+     * @param vel_app_ret
+     * @param success
      * @param mod
      * @return
      */
-    double getVelocity(int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj, MatrixXd &vel, int mod);
+    double getVelocity(int mov_type, int steps, hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &vel_app_ret,bool &success, int mod);
 
     /**
      * @brief getAcceleration
+     * @param mov_type
      * @param steps
      * @param tols
      * @param initPosture
@@ -495,13 +510,15 @@ private:
      * @param traj
      * @param vel
      * @param acc
+     * @param success
      * @param mod
      * @return
      */
-    double getAcceleration(int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc, int mod);
+    double getAcceleration(int mov_type, int steps, hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc, bool &success, int mod);
 
     /**
      * @brief getAcceleration
+     * @param mov_type
      * @param steps
      * @param tols
      * @param initPosture
@@ -509,10 +526,11 @@ private:
      * @param traj
      * @param vel
      * @param acc
+     * @param success
      * @param mod
      * @return
      */
-    double getAcceleration(int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc,int mod);
+    double getAcceleration(int mov_type, int steps, hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc, bool &success, int mod);
 
     /**
      * @brief This method writes down the dimensions of the body ofthe humanoid
@@ -849,6 +867,114 @@ private:
      */
     int getSteps(std::vector<double>& maxLimits,std::vector<double>& minLimits,std::vector<double>& initPosture,std::vector<double>& finalPosture);
 
+
+    //double getAlpha(int arm, std::vector<double> &posture);
+
+
+    //int invKinematics(int arm, std::vector<double>& pose, double alpha, std::vector<double> &init_posture, std::vector<double>& posture);
+
+    /**
+     * @brief RotMatrix
+     * @param theta
+     * @param alpha
+     * @param Rot
+     */
+    void RotMatrix(double theta, double alpha, Matrix3d& Rot);
+
+    /**
+     * @brief transfMatrix
+     * @param alpha
+     * @param a
+     * @param d
+     * @param theta
+     * @param T
+     */
+    void transfMatrix(double alpha, double a, double d, double theta, Matrix4d &T);
+
+    /**
+     * @brief getRPY
+     * @param rpy
+     * @param Rot
+     * @return
+     */
+    bool getRPY(std::vector<double>& rpy, Matrix3d& Rot);
+
+    /**
+     * @brief directKinematicsSingleArm
+     * @param arm
+     * @param posture
+     */
+    void directKinematicsSingleArm(int arm, std::vector<double>& posture);
+
+
+    /**
+     * @brief getShoulderPos
+     * @param arm
+     * @param posture
+     * @param pos
+     */
+    void getShoulderPos(int arm,vector<double> &posture,vector<double> &pos);
+
+    /**
+     * @brief getShoulderOr
+     * @param arm
+     * @param posture
+     * @param orient
+     */
+    void getShoulderOr(int arm, vector<double> &posture,vector<double> &orient);
+
+
+    /**
+     * @brief getElbowPos
+     * @param arm
+     * @param posture
+     * @param pos
+     */
+    void getElbowPos(int arm,vector<double> &posture,vector<double> &pos);
+
+
+    /**
+     * @brief getElbowOr
+     * @param arm
+     * @param posture
+     * @param orient
+     */
+    void getElbowOr(int arm, vector<double> &posture,vector<double> &orient);
+
+    /**
+     * @brief getWristPos
+     * @param arm
+     * @param posture
+     * @param pos
+     */
+    void getWristPos(int arm,vector<double> &posture,vector<double> &pos);
+
+    /**
+     * @brief getWristOr
+     * @param arm
+     * @param posture
+     * @param orient
+     */
+    void getWristOr(int arm, vector<double> &posture,vector<double> &orient);
+
+    /**
+     * @brief getHandPos
+     * @param arm
+     * @param posture
+     * @param pos
+     */
+    void getHandPos(int arm,vector<double> &posture,vector<double> &pos);
+
+    /**
+     * @brief getHandOr
+     * @param arm
+     * @param posture
+     * @param orient
+     */
+    void getHandOr(int arm, vector<double> &posture,vector<double> &orient);
+
+
+    //bool singleArmInvKinematics(hump_params& params,std::vector<double> &init_posture,std::vector<double>& hand_pose,std::vector<double>& goal_posture);
 
 
 

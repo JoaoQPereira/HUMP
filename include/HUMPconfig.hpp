@@ -52,15 +52,17 @@ namespace HUMotion{
 typedef boost::shared_ptr<Object> objectPtr;/**< shared pointer to an object in the scenario */
 
 const double PHI = (-log(2.0)/log(TB));/**< parameter to control when the bounce posture is reached */
-const double AP = 15.0*static_cast<double>(M_PI)/180; /**< aperture of the fingers when approaching to pick [rad] */
+const double AP = 20.0*static_cast<double>(M_PI)/180; /**< aperture of the fingers when approaching to pick [rad] */
 
-const double BLANK_PERCENTAGE = 0.10; /**< percentage of steps to eliminate when either reaching to grasp an object OR move at the beginning of a move movement [0,1]*/
+const double BLANK_PERCENTAGE_TAR = 0.10; /**< percentage of steps to eliminate when either reaching to grasp an object [0,1]*/
+const double BLANK_PERCENTAGE_OBS = 0.20;/**< move at the beginning of a move movement [0,1] */
 
 const int N_STEP_MIN = 5; /**< minimum number of steps */
 const int N_STEP_MAX = 50; /**< maximum number of steps */
 
-const double W_RED_MIN = 1; /**< minimum value of angular velocity reduction when approaching */
-const double W_RED_MAX = 10; /**< maximum value of angular velocity reduction when approaching */
+const double W_RED_MIN = 1; /**< minimum value of angular velocity reduction when approaching and retreating */
+//const double W_RED_APP_MAX = 5; /**< maximum value of angular velocity reduction when approaching */
+//const double W_RED_RET_MAX = 5; /**< maximum value of angular velocity reduction when retreating */
 
 /** this struct defines the Denavit-Hartenberg kinematic parameters */
 typedef struct{
@@ -119,6 +121,9 @@ typedef struct{
     objectPtr obj; /**< object involved in the movement. The info of the object have to be updated according to the selected movement */
     bool approach;/**< true to use the approach options, false otherwise  */
     bool retreat;/**< true to use the retreat options, false otherwise */
+    bool straight_line; /**< true to use the straight line option of the approach/retreat stage */
+    double w_red_app_max;/**< maximum velocity reduction factor when approaching */
+    double w_red_ret_max;/**< maximum velocity reduction factor when retreating */
     std::vector<double> pre_grasp_approach; /**< (0)= x component, (1)= y component, (2)= z component, (3)= distance from the target*/
     std::vector<double> post_grasp_retreat; /**< (0)= x component, (1)= y component, (2)= z component, (3)= distance from the target*/
     std::vector<double> pre_place_approach; /**< (0)= x component, (1)= y component, (2)= z component, (3)= distance from the target*/
@@ -154,7 +159,7 @@ typedef struct{
     vector<double> w_max; /**< maximum angular velocity for each joint [rad/s] */
     bool obstacle_avoidance; /**< true to avoid obstacle */
     bool target_avoidance; /**< true to avoid the target during the motion */
-} hump_params;
+}hump_params;
 
 /** This struct defines the result of the planned trajectory */
 typedef struct{
