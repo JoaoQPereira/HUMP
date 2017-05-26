@@ -4112,7 +4112,7 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
         break;
     }
 
-    //TO DO::::::::::::::::::::::::::::::::::::::::ADAPTAR PARA O RETREAT E APPROACH
+
     double max_ext = Lh + Ll + Lu;
 
     std::vector<double> shPos;
