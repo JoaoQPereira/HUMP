@@ -382,22 +382,6 @@ HumanHand HUMPlanner::getHumanHand()
     return this->hhand;
 }
 
-<<<<<<< HEAD
-
-void HUMPlanner::setShpos(std::vector<double> &shPos)
-{
-    this->shPos = shPos;
-}
-
-
-void HUMPlanner::getShpos(std::vector<double> &shPos)
-{
-    shPos = this->shPos;
-}
-
-
-=======
->>>>>>> upstream/master
 void HUMPlanner::writeBodyDim(double h_xsize,double h_ysize, ofstream &stream)
 {
     string bodyxsize=  boost::str(boost::format("%.2f") % (h_xsize/2));
@@ -2299,11 +2283,6 @@ void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final)
         stream << string("subject to BodyArm_Elbow{l in Iterations}: (Elbow[1,l]/body[1])^2 + (Elbow[2,l]/body[2])^2 >= 1; \n");
         stream << string("subject to BodyArm_Wrist{l in Iterations}: (Wrist[1,l]/body[1])^2 + (Wrist[2,l]/body[2])^2 >= 1; \n");
         stream << string("subject to BodyArm_Hand{l in Iterations}:  (Hand[1,l]/body[1])^2  + (Hand[2,l]/body[2])^2  >= 1; \n\n");
-<<<<<<< HEAD
-=======
-
-
->>>>>>> upstream/master
     }
 }
 
@@ -4095,21 +4074,6 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
         break;
     }
 
-    bool approach = params.mov_specs.approach;
-    bool retreat = params.mov_specs.retreat;
-
-    std::vector<double> approach_retreat;
-    switch(mov_type)
-    {
-    case 0: // pick
-        if(approach){approach_retreat = params.mov_specs.pre_grasp_approach;}
-        if(retreat){approach_retreat = params.mov_specs.post_grasp_retreat;}
-        break;
-    case 1: // place
-        if(approach){approach_retreat = params.mov_specs.pre_place_approach;}
-        if(retreat){approach_retreat = params.mov_specs.post_place_retreat;}
-        break;
-    }
 
 
     std::vector<double> initArmPosture(initPosture.begin(),initPosture.begin()+joints_arm);
@@ -4142,39 +4106,6 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
         break;
     }
 
-<<<<<<< HEAD
-
-    double max_ext = Lh + Ll + Lu;
-
-    std::vector<double> shPos;
-    this->getShpos(shPos);
-
-    Vector3d tar_pos(target.at(0),target.at(1),target.at(2));
-
-
-    if(approach || retreat)
-    {
-        std::vector<double> rpy = {target.at(3), target.at(4), target.at(5)};
-        Matrix3d Rot_tar;
-        this->RPY_matrix(rpy,Rot_tar);
-
-        double dist = approach_retreat.at(3);
-        Vector3d v(approach_retreat.at(0), approach_retreat.at(1), approach_retreat.at(2));
-        Vector3d vv = Rot_tar * v;
-
-        tar_pos = tar_pos + dist * vv;
-    }
-
-
-    if(sqrt(pow(tar_pos(0) - this->shPos.at(0),2)+
-            pow(tar_pos(1) - this->shPos.at(1),2)+
-            pow(tar_pos(2) - this->shPos.at(2),2)) >= max_ext)
-    {
-        throw string("The movement to be planned goes out of the reacheble workspace");
-    }
-
-
-=======
     // check if the target is in the workspace of the robotic arm
     double max_ext = Lh+Ll+Lu;
     std::vector<double> shPos; this->getShoulderPos(arm_code,initPosture,shPos);
@@ -4193,7 +4124,6 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
         throw string("The movement to be planned goes out of the reachable workspace");
     }
 
->>>>>>> upstream/master
     // initial guess
     std::vector<double> minArmLimits(minLimits.begin(),minLimits.begin()+joints_arm);
     std::vector<double> maxArmLimits(maxLimits.begin(),maxLimits.begin()+joints_arm);
@@ -4474,12 +4404,8 @@ double HUMPlanner::getTimeStep(hump_params &tols, MatrixXd &jointTraj)
     return timestep;
 }
 
-<<<<<<< HEAD
 
-void HUMPlanner::setBoundaryConditions(hump_params &params, int steps, std::vector<double> &initPosture, std::vector<double> &finalPosture, int mod)
-=======
 bool HUMPlanner::setBoundaryConditions(int mov_type,hump_params &params, int steps, std::vector<double> &initPosture, std::vector<double> &finalPosture, int mod)
->>>>>>> upstream/master
 {
 
     MatrixXd fakeTraj; bool success = true;
@@ -4726,20 +4652,6 @@ bool HUMPlanner::directTrajectory(int mov_type,int steps,hump_params &tols, std:
                         (1-app)*(1-ret)*0.5*acc_0.at(j)*pow(T,2)*(pow(tau.at(i),2)-3*pow(tau.at(i),3)+3*pow(tau.at(i),4)-pow(tau.at(i),5))+
                         (1-app)*(1-ret)*0.5*acc_f.at(j)*pow(T,2)*(pow(tau.at(i),3)-2*pow(tau.at(i),4)+pow(tau.at(i),5));
 
-<<<<<<< HEAD
-    for (int i = 0; i <= steps;++i){
-        for (std::size_t j = 0; j<initPosture.size(); ++j){
-            Traj(i,j) = initPosture.at(j) +
-                    (1-app)*(1-ret)*(finalPosture.at(j) - initPosture.at(j))*(10*pow(tau.at(i),3)-15*pow(tau.at(i),4)+6*pow(tau.at(i),5))+
-                    app*0.25*(finalPosture.at(j) - initPosture.at(j))*(5*tau.at(i)-pow(tau.at(i),5))+
-                    ret*0.33*(finalPosture.at(j) - initPosture.at(j))*(5*pow(tau.at(i),4)-2*pow(tau.at(i),5))+
-                    (1-app)*(1-ret)*vel_0.at(j)*T*(tau.at(i)-6*pow(tau.at(i),3)+8*pow(tau.at(i),4)-3*pow(tau.at(i),5))+
-                    (1-app)*(1-ret)*vel_f.at(j)*T*(-4*pow(tau.at(i),3)+7*pow(tau.at(i),4)-3*pow(tau.at(i),5))+
-                    (1-app)*(1-ret)*0.5*acc_0.at(j)*pow(T,2)*(pow(tau.at(i),2)-3*pow(tau.at(i),3)+3*pow(tau.at(i),4)-pow(tau.at(i),5))+
-                    (1-app)*(1-ret)*0.5*acc_f.at(j)*pow(T,2)*(pow(tau.at(i),3)-2*pow(tau.at(i),4)+pow(tau.at(i),5));
-        }
-    }
-=======
             }
         }
     }
@@ -4747,7 +4659,6 @@ bool HUMPlanner::directTrajectory(int mov_type,int steps,hump_params &tols, std:
 
     return success;
 
->>>>>>> upstream/master
 }
 
 
@@ -4773,12 +4684,8 @@ void HUMPlanner::directTrajectoryNoBound(int steps,std::vector<double>& initPost
     }
 }
 
-<<<<<<< HEAD
 
-void HUMPlanner::directVelocity(int steps,hump_params &tols, std::vector<double> &initPosture, std::vector<double> &finalPosture,double timestep, MatrixXd &Vel, int mod)
-=======
 bool HUMPlanner::directVelocity(int steps,hump_params &tols, std::vector<double> &initPosture, std::vector<double> &finalPosture,double timestep, MatrixXd &Vel, MatrixXd &vel_app_ret,int mod)
->>>>>>> upstream/master
 {
 
     std::vector<double> tau = std::vector<double>(steps+1); // normalized time
@@ -4830,22 +4737,6 @@ bool HUMPlanner::directVelocity(int steps,hump_params &tols, std::vector<double>
     }
     Vel = MatrixXd::Constant(steps+1,initPosture.size(),0);
 
-<<<<<<< HEAD
-    for (int i = 0; i <= steps;++i){
-        for (std::size_t j = 0; j<initPosture.size(); ++j){
-            Vel(i,j) = (1-app)*(1-ret)*(30/T)*(finalPosture.at(j) - initPosture.at(j))*
-                    (pow(tau.at(i),2)-2*pow(tau.at(i),3)+pow(tau.at(i),4))+
-                    (1-app)*vel_0.at(j)*(1-18*pow(tau.at(i),2)+32*pow(tau.at(i),3)-15*pow(tau.at(i),4)) + app*vel_0.at(j)*(1-pow(tau.at(i),4)) +
-                    (1-ret)*vel_f.at(j)*(-12*pow(tau.at(i),2)+28*pow(tau.at(i),3)-15*pow(tau.at(i),4)) + ret*vel_f.at(j)*(2*pow(tau.at(i),3)-pow(tau.at(i),4)) +
-                    (1-app)*(1-ret)*0.5*acc_0.at(j)*T*(2*tau.at(i)-9*pow(tau.at(i),2)+12*pow(tau.at(i),3)-5*pow(tau.at(i),4))+
-                    (1-app)*(1-ret)*0.5*acc_f.at(j)*T*(3*pow(tau.at(i),2)-8*pow(tau.at(i),3)+5*pow(tau.at(i),4));
-        }
-    }
-}
-
-
-void HUMPlanner::directAcceleration(int steps,hump_params &tols, std::vector<double> &initPosture, std::vector<double> &finalPosture, double timestep, MatrixXd &Acc, int mod)
-=======
     if((app==1 || ret==1) && straight_line){
         for (int i = 0; i <= steps;++i){
             for (std::size_t j = 0; j<initPosture.size(); ++j){
@@ -4878,7 +4769,6 @@ void HUMPlanner::directAcceleration(int steps,hump_params &tols, std::vector<dou
 }
 
 bool HUMPlanner::directAcceleration(int steps,hump_params &tols, std::vector<double> &initPosture, std::vector<double> &finalPosture, double timestep, MatrixXd &Acc, MatrixXd &vel_app_ret, int mod)
->>>>>>> upstream/master
 {
 
     std::vector<double> tau = std::vector<double>(steps+1); // normalized time
@@ -4930,16 +4820,6 @@ bool HUMPlanner::directAcceleration(int steps,hump_params &tols, std::vector<dou
     }
     Acc = MatrixXd::Constant(steps+1,initPosture.size(),0);
 
-<<<<<<< HEAD
-    for (int i = 0; i <= steps;++i){
-        for (std::size_t j = 0; j<initPosture.size(); ++j){
-            Acc(i,j) = (1-app)*(1-ret)*(60/pow(T,2))*(finalPosture.at(j) - initPosture.at(j))*
-                    (tau.at(i)-3*pow(tau.at(i),2)+2*pow(tau.at(i),3))+
-                    (1-app)*(1-ret)*12*(vel_0.at(j)/T)*(-3*tau.at(i)+8*pow(tau.at(i),2)-5*pow(tau.at(i),3))+
-                    (1-app)*(1-ret)*12*(vel_f.at(j)/T)*(-2*tau.at(i)+7*pow(tau.at(i),2)-5*pow(tau.at(i),3))+
-                    (1-app)*acc_0.at(j)*(1-9*tau.at(i)+18*pow(tau.at(i),2)-10*pow(tau.at(i),3))+ app*acc_0.at(j)*(1-pow(tau.at(i),3))+
-                    (1-ret)*acc_f.at(j)*(3*tau.at(i)-12*pow(tau.at(i),2)+10*pow(tau.at(i),3))+ret*acc_f.at(j)*(3*pow(tau.at(i),2)-2*pow(tau.at(i),3));
-=======
     if((app==1 || ret==1) && straight_line){
         for (int i = 0; i <= steps;++i){
             for (std::size_t j = 0; j<initPosture.size(); ++j){
@@ -4963,7 +4843,6 @@ bool HUMPlanner::directAcceleration(int steps,hump_params &tols, std::vector<dou
                         (1-ret)*acc_f.at(j)*(3*tau.at(i)-12*pow(tau.at(i),2)+10*pow(tau.at(i),3))+ret*acc_f.at(j)*(3*pow(tau.at(i),2)-2*pow(tau.at(i),3));
 
             }
->>>>>>> upstream/master
         }
     }
 
@@ -5061,12 +4940,8 @@ void HUMPlanner::computeMovement(const MatrixXd &direct, const MatrixXd &back, M
     }
 }
 
-<<<<<<< HEAD
 
-double HUMPlanner::getTrajectory(int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj,int mod)
-=======
 double HUMPlanner::getTrajectory(int mov_type,int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj, MatrixXd &vel_app_ret, bool &success,int mod)
->>>>>>> upstream/master
 {
     double timestep; MatrixXd traj_no_bound;
     this->directTrajectoryNoBound(steps,initPosture,finalPosture,traj_no_bound);
@@ -5090,14 +4965,8 @@ double HUMPlanner::getTrajectory(int mov_type,int steps,hump_params &tols, std::
     return timestep;
 }
 
-<<<<<<< HEAD
-
-double HUMPlanner::getTrajectory(int steps,hump_params &tols,std::vector<double> initPosture,
-                                 std::vector<double> finalPosture, std::vector<double> bouncePosture, MatrixXd &traj,int mod)
-=======
 double HUMPlanner::getTrajectory(int mov_type,int steps,hump_params &tols,std::vector<double> initPosture,
                                  std::vector<double> finalPosture, std::vector<double> bouncePosture, MatrixXd &traj, MatrixXd &vel_app_ret, bool &success, int mod)
->>>>>>> upstream/master
 {
     double timestep;
     MatrixXd d_traj_no_bound;
@@ -5125,19 +4994,14 @@ double HUMPlanner::getVelocity(int mov_type,int steps,hump_params &tols, std::ve
 
 }
 
-<<<<<<< HEAD
 
-double HUMPlanner::getVelocity(int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture, MatrixXd &traj, MatrixXd &vel,int mod)
-{
-    double timestep = this->getTrajectory(steps,tols,initPosture,finalPosture,bouncePosture,traj,mod);
-=======
 double HUMPlanner::getVelocity(int mov_type,int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture,
                                MatrixXd &traj, MatrixXd &vel,MatrixXd &vel_app_ret,bool &success,int mod)
 {
 
 
     double timestep = this->getTrajectory(mov_type,steps,tols,initPosture,finalPosture,bouncePosture,traj,vel_app_ret,success,mod);
->>>>>>> upstream/master
+
 
     MatrixXd dVel;
     MatrixXd bVel;
@@ -5149,31 +5013,19 @@ double HUMPlanner::getVelocity(int mov_type,int steps,hump_params &tols, std::ve
     return timestep;
 }
 
-<<<<<<< HEAD
 
-double HUMPlanner::getAcceleration(int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc, int mod)
-{
-    double timestep = this->getVelocity(steps,tols,initPosture,finalPosture,traj,vel,mod);
-
-    this->directAcceleration(steps,tols,initPosture,finalPosture,timestep,acc,mod);
-=======
 double HUMPlanner::getAcceleration(int mov_type,int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc, bool &success, int mod)
 {
     MatrixXd vel_app_ret;
     double timestep = this->getVelocity(mov_type,steps,tols,initPosture,finalPosture,traj,vel,vel_app_ret,success,mod);
 
     this->directAcceleration(steps,tols,initPosture,finalPosture,timestep,acc,vel_app_ret,mod);
->>>>>>> upstream/master
 
     return timestep;
 }
 
-<<<<<<< HEAD
 
-double HUMPlanner::getAcceleration(int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc,int mod)
-=======
 double HUMPlanner::getAcceleration(int mov_type,int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc, bool &success, int mod)
->>>>>>> upstream/master
 {
     MatrixXd vel_app_ret;
     double timestep = this->getVelocity(mov_type,steps,tols,initPosture,finalPosture,bouncePosture,traj,vel,vel_app_ret,success,mod);
@@ -5222,11 +5074,7 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
     res->object_id = params.mov_specs.obj->getName();
     bool approach = params.mov_specs.approach;
     bool retreat = params.mov_specs.retreat;
-<<<<<<< HEAD
-
-=======
     bool straight_line = params.mov_specs.straight_line;
->>>>>>> upstream/master
     int pre_post = 0; // 0 = use no options, 1 = use approach options, 2 = use retreat options
     int mod; // 0 = move, 1 = pre_approach, 2 = approach, 3 = retreat
 
@@ -5268,13 +5116,7 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
 
                 int steps = this->getSteps(maxLimits, minLimits,initPosture,finalPosture_pre_grasp_ext);
 
-<<<<<<< HEAD
-                pre_post = 0;
-                FPosture = this->singleArmFinalPosture(mov_type,pre_post,params,finalPosture_pre_grasp,finalPosture);
 
-                if(FPosture)
-                {
-=======
                 if(straight_line){
                     bool init_coll = params.mov_specs.coll;
                     params.mov_specs.coll = false;
@@ -5287,7 +5129,6 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                 }
 
                 if(FPosture){
->>>>>>> upstream/master
                     // extend the final postures
                     finalPosture_ext = finalPosture;
                     finalPosture_ext.push_back(finalHand.at(0));
@@ -5302,115 +5143,6 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
 
                     // calculate the approach boundary conditions
                     // the velocity approach is the maximum velocity reached at tau=0.5 of the trajectory with null boundary conditions
-<<<<<<< HEAD
-                    this->setBoundaryConditions(params,steps_app,finalPosture_pre_grasp_ext,finalPosture_ext,0);
-
-                    // collisions
-                    if(coll)
-                    {
-                        pre_post = 1;
-                        BPosture = this->singleArmBouncePosture(steps,mov_type,pre_post,params,initPosture,finalPosture_pre_grasp,bouncePosture_pre_grasp);
-
-                        if(BPosture)
-                        {
-                            res->status = 0; res->status_msg = string("HUMP: trajectory planned successfully ");
-                            res->time_steps.clear();
-                            res->trajectory_stages.clear(); res->trajectory_descriptions.clear();
-                            res->velocity_stages.clear();
-                            res->acceleration_stages.clear();
-
-                            // approach stage
-                            MatrixXd traj_app; MatrixXd vel_app; MatrixXd acc_app; double timestep_app;
-                            mod = 2;
-                            timestep_app = this->getAcceleration(steps_app,params,finalPosture_pre_grasp_ext,finalPosture_ext,traj_app,vel_app,acc_app,mod);
-
-                            // pre-approach stage
-                            MatrixXd traj_pre_app; MatrixXd vel_pre_app; MatrixXd acc_pre_app; double timestep_pre_app;
-                            mod = 1;
-                            timestep_pre_app = this->getAcceleration(steps,params,initPosture,finalPosture_pre_grasp_ext,bouncePosture_pre_grasp,traj_pre_app,vel_pre_app,acc_pre_app,mod);
-
-                            // pre-approach
-                            res->time_steps.push_back(timestep_pre_app);
-                            res->trajectory_stages.push_back(traj_pre_app); res->trajectory_descriptions.push_back("plan");
-                            res->velocity_stages.push_back(vel_pre_app);
-                            res->acceleration_stages.push_back(acc_pre_app);
-
-                            // approach
-                            res->time_steps.push_back(timestep_app);
-                            res->trajectory_stages.push_back(traj_app); res->trajectory_descriptions.push_back("approach");
-                            res->velocity_stages.push_back(vel_app);
-                            res->acceleration_stages.push_back(acc_app);
-                        }
-                        else
-                        {
-                            res->status = 20;
-                            res->status_msg = string("HUMP: bounce posture pre grasp selection failed ");
-                        }
-                    }
-                    // no collisions
-                    else
-                    {
-                        pre_post = 0;
-                        FPosture = this->singleArmFinalPosture(mov_type,pre_post,params,finalPosture_pre_grasp,finalPosture);
-
-                        if(FPosture)
-                        {
-                            res->status = 0; res->status_msg = string("HUMP: trajectory planned successfully ");
-                            res->time_steps.clear();
-                            res->trajectory_stages.clear(); res->trajectory_descriptions.clear();
-                            res->velocity_stages.clear();
-                            res->acceleration_stages.clear();
-
-                            // extend the final postures
-                            finalPosture_ext = finalPosture;
-                            finalPosture_ext.push_back(finalHand.at(0));
-
-                            for(size_t i=1;i<finalHand.size();++i)
-                            {
-                                finalPosture_ext.push_back(finalHand.at(i));
-                            }
-
-                            // pre-approach stage
-                            MatrixXd traj; MatrixXd vel; MatrixXd acc; double timestep; mod = 1;
-                            timestep = this->getAcceleration(steps,params,initPosture,finalPosture_pre_grasp_ext,traj,vel,acc,mod);
-                            res->time_steps.push_back(timestep);
-                            res->trajectory_stages.push_back(traj); res->trajectory_descriptions.push_back("plan");
-                            res->velocity_stages.push_back(vel);
-                            res->acceleration_stages.push_back(acc);
-
-                            // approach stage
-                            mod = 2;
-                            int steps_app = this->getSteps(maxLimits, minLimits,finalPosture_pre_grasp_ext,finalPosture_ext);
-                            timestep = this->getAcceleration(steps_app,params,finalPosture_pre_grasp_ext,finalPosture_ext,traj,vel,acc,mod);
-
-                            res->time_steps.push_back(timestep);
-                            res->trajectory_stages.push_back(traj); res->trajectory_descriptions.push_back("approach");
-                            res->velocity_stages.push_back(vel);
-                            res->acceleration_stages.push_back(acc);
-                        }
-                        else
-                        {
-                            res->status = 30;
-                            res->status_msg = string("HUMP: final posture grasp selection failed ");
-                        }
-                    }
-                }
-                else
-                {
-                    res->status = 30;
-                    res->status_msg = string("HUMP: final posture grasp selection failed ");
-                }
-            }
-            else
-            {
-                res->status = 10;
-                res->status_msg = string("HUMP: final posture pre grasp selection failed ");
-            }
-        }
-
-        else
-        { // no approach
-=======
                     //
                     if(this->setBoundaryConditions(mov_type,params,steps_app,finalPosture_pre_grasp_ext,finalPosture_ext,0)){
                         if(coll){// collisions
@@ -5482,7 +5214,6 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                 }else{res->status = 30; res->status_msg = string("HUMP: final posture grasp selection failed ");}
             }else{res->status = 10; res->status_msg = string("HUMP: final posture pre grasp selection failed ");}
         }else{ // no approach
->>>>>>> upstream/master
             pre_post = 0;
             FPosture = this->singleArmFinalPosture(mov_type,pre_post,params,initPosture,finalPosture);
 
@@ -5553,21 +5284,6 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                 res->status_msg = string("HUMP: final posture selection failed ");
             }
         }
-<<<<<<< HEAD
-
-
-        // collisions
-        if(coll)
-        {
-            // retreat stage
-            if(retreat && FPosture && BPosture)
-            {
-                pre_post=2;
-                FPosture_post_grasp = this->singleArmFinalPosture(mov_type,pre_post,params,finalPosture,finalPosture_post_grasp);
-
-                if (FPosture_post_grasp)
-                {
-=======
         if(coll){ // collisions
             if(retreat && FPosture && BPosture){// retreat stage
                 if(straight_line){
@@ -5581,7 +5297,6 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                     FPosture_post_grasp = this->singleArmFinalPosture(mov_type,pre_post,params,finalPosture,finalPosture_post_grasp);
                 }
                 if (FPosture_post_grasp){
->>>>>>> upstream/master
                     res->status = 0; res->status_msg = string("HUMP: trajectory planned successfully ");
                     std::vector<double> finalPosture_post_grasp_ext = finalPosture_post_grasp;
 
@@ -5594,23 +5309,6 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
 
                     // calculate the retreat boundary conditions
                     // the final velocity is the maximum velocity reached at tau=0.5 of the trajectory with null boundary conditions
-<<<<<<< HEAD
-                    this->setBoundaryConditions(params,steps_ret,finalPosture_ext,finalPosture_post_grasp_ext,1);
-
-                    // retreat stage
-                    MatrixXd traj; MatrixXd vel; MatrixXd acc; double timestep; mod = 3;
-                    timestep = this->getAcceleration(steps_ret,params,finalPosture_ext,finalPosture_post_grasp_ext,traj,vel,acc,mod);
-                    res->time_steps.push_back(timestep);
-                    res->trajectory_stages.push_back(traj); res->trajectory_descriptions.push_back("retreat");
-                    res->velocity_stages.push_back(vel);
-                    res->acceleration_stages.push_back(acc);
-                }
-                else
-                {
-                    res->status = 40;
-                    res->status_msg = string("HUMP: final posture post grasp selection failed ");
-                }
-=======
                     this->setBoundaryConditions(mov_type,params,steps_ret,finalPosture_ext,finalPosture_post_grasp_ext,1);
                     // retreat stage
                     MatrixXd traj; MatrixXd vel; MatrixXd acc; double timestep; mod = 3; bool success = true;
@@ -5622,7 +5320,6 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                         res->acceleration_stages.push_back(acc);
                     }else{res->status = 50; res->status_msg = string("HUMP: final posture retreat from grasp selection failed ");}
                 }else{res->status = 40; res->status_msg = string("HUMP: final posture post grasp selection failed ");}
->>>>>>> upstream/master
             }
         }
         // no collisions
@@ -5648,23 +5345,6 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
 
                     // calculate the retreat boundary conditions
                     // the final velocity is the maximum velocity reached at tau=0.5 of the trajectory with null boundary conditions
-<<<<<<< HEAD
-                    this->setBoundaryConditions(params,steps_ret,finalPosture_ext,finalPosture_post_grasp_ext,1);
-
-                    // retreat stage
-                    MatrixXd traj; MatrixXd vel; MatrixXd acc; double timestep; mod = 3;
-                    timestep = this->getAcceleration(steps_ret,params,finalPosture_ext,finalPosture_post_grasp_ext,traj,vel,acc,mod);
-                    res->time_steps.push_back(timestep);
-                    res->trajectory_stages.push_back(traj); res->trajectory_descriptions.push_back("retreat");
-                    res->velocity_stages.push_back(vel);
-                    res->acceleration_stages.push_back(acc);
-                }
-                else
-                {
-                    res->status = 40;
-                    res->status_msg = string("HUMP: final posture post grasp selection failed ");
-                }
-=======
                     this->setBoundaryConditions(mov_type,params,steps_ret,finalPosture_ext,finalPosture_post_grasp_ext,1);
                     // retreat stage
                     MatrixXd traj; MatrixXd vel; MatrixXd acc; double timestep; mod = 3; bool success = true;
@@ -5676,7 +5356,6 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                         res->acceleration_stages.push_back(acc);
                     }else{res->status = 50; res->status_msg = string("HUMP: final posture retreat from grasp selection failed ");}
                 }else{res->status = 40; res->status_msg = string("HUMP: final posture post grasp selection failed ");}
->>>>>>> upstream/master
             }
         }
     }catch (const string message){throw message;
