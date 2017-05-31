@@ -172,6 +172,7 @@ typedef struct{
     vector<MatrixXd> acceleration_stages;/**< sequence of the accelerations */
     vector<double> time_steps; /**< sequence of each time steps for each trajectory */
     vector<string> trajectory_descriptions;/**< description of the trajectories */
+    vector<objectPtr> obstacles_scenario; /** obstacles in the scenario*/
 }planning_result;
 
 

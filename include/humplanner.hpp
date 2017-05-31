@@ -74,7 +74,7 @@ public:
      * @param obs
      * @return
      */
-    bool getObstacles(std::vector<objectPtr>& obs);
+    bool getObstacles(std::vector<objectPtr> &obs);
 
     /**
      * @brief getObstacle
