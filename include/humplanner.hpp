@@ -879,7 +879,7 @@ private:
      * @param alpha
      * @param Rot
      */
-    void RotMatrix(double theta, double alpha, Matrix3d& Rot);
+    void RotMatrix(double theta, double theta_offset, double alpha, Matrix3d& Rot);
 
     /**
      * @brief transfMatrix
@@ -889,7 +889,7 @@ private:
      * @param theta
      * @param T
      */
-    void transfMatrix(double alpha, double a, double d, double theta, Matrix4d &T);
+    void transfMatrix(double alpha, double a, double d, double theta, double theta_offset, Matrix4d &T);
 
     /**
      * @brief getRPY
