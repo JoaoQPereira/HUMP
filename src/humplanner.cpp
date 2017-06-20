@@ -433,16 +433,6 @@ void HUMPlanner::writeArmDHParams(DHparameters dh, ofstream &stream, int k)
             stream << to_string(i+1)+string(" ")+d_str+string("\n");
         }
     }
-    stream << string("param theta_offset := \n");
-    string thetaoff_str;
-    for(std::size_t i=0; i<joints_arm; ++i){
-        thetaoff_str =  boost::str(boost::format("%.2f") % (k*dh.theta_offset.at(i)));
-        if (i == dh.theta_offset.size()-1){
-            stream << to_string(i+1)+string(" ")+thetaoff_str+string(";\n");
-        }else{
-            stream << to_string(i+1)+string(" ")+thetaoff_str+string("\n");
-        }
-    }
 }
 
 
@@ -1082,7 +1072,6 @@ void HUMPlanner::writeArmDHParamsMod(ofstream &stream)
     stream << string("param alpha {i in 1..")+to_string(joints_arm)+string("} ; \n");
     stream << string("param a {i in 1..")+to_string(joints_arm)+string("} ; \n");
     stream << string("param d {i in 1..")+to_string(joints_arm)+string("} ; \n");
-    stream << string("param theta_offset {i in 1..")+to_string(joints_arm)+string("} ; \n");
 }
 
 
@@ -1244,8 +1233,8 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
         stream << string("# 1st row \n");
         if(final)
         {
-            stream << string("if ( i1=1 && i2=1 ) then cos(theta[")+idx1+string("]+theta_offset[")+idx1+string("]) \n");
-            stream << string("else	if ( i1=1 && i2=2 ) then -sin(theta[")+idx1+string("]+theta_offset[")+idx1+string("]) \n");
+            stream << string("if ( i1=1 && i2=1 ) then cos(theta[")+idx1+string("]) \n");
+            stream << string("else	if ( i1=1 && i2=2 ) then -sin(theta[")+idx1+string("]) \n");
         }
         else
         {
@@ -1261,8 +1250,8 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
         stream << string("# 2st row \n");
         if(final)
         {
-            stream << string("else	if ( i1=2 && i2=1 ) then sin(theta[")+idx1+string("]+theta_offset[")+idx1+string("])*c_alpha[")+idx1+string("] \n");
-            stream << string("else	if ( i1=2 && i2=2 ) then cos(theta[")+idx1+string("]+theta_offset[")+idx1+string("])*c_alpha[")+idx1+string("] \n");
+            stream << string("else	if ( i1=2 && i2=1 ) then sin(theta[")+idx1+string("])*c_alpha[")+idx1+string("] \n");
+            stream << string("else	if ( i1=2 && i2=2 ) then cos(theta[")+idx1+string("])*c_alpha[")+idx1+string("] \n");
         }
         else
         {
@@ -1278,8 +1267,8 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
         stream << string("# 3rd row \n");
         if(final)
         {
-            stream << string("else	if ( i1=3 && i2=1 ) then sin(theta[")+idx1+string("]+theta_offset[")+idx1+string("])*s_alpha[")+idx1+string("] \n");
-            stream << string("else	if ( i1=3 && i2=2 ) then cos(theta[")+idx1+string("]+theta_offset[")+idx1+string("])*s_alpha[")+idx1+string("] \n");
+            stream << string("else	if ( i1=3 && i2=1 ) then sin(theta[")+idx1+string("])*s_alpha[")+idx1+string("] \n");
+            stream << string("else	if ( i1=3 && i2=2 ) then cos(theta[")+idx1+string("])*s_alpha[")+idx1+string("] \n");
         }
         else
         {
@@ -6204,20 +6193,20 @@ int HUMPlanner::invKinematics(int arm, std::vector<double> &pose, double alpha, 
 }
 */
 
-void HUMPlanner::RotMatrix(double theta, double theta_offset, double alpha, Matrix3d &Rot)
+void HUMPlanner::RotMatrix(double theta, double alpha, Matrix3d &Rot)
 {
-    Rot(0,0) = cos(theta + theta_offset);              Rot(0,1) = -sin(theta + theta_offset);              Rot(0,2) = 0.0;
-    Rot(1,0) = sin(theta + theta_offset)*cos(alpha);   Rot(1,1) = -cos(theta + theta_offset)*cos(alpha);   Rot(1,2) = -sin(alpha);
-    Rot(2,0) = sin(theta + theta_offset)*sin(alpha);   Rot(2,1) = cos(theta + theta_offset)*sin(alpha);    Rot(2,2) = cos(alpha);
+    Rot(0,0) = cos(theta);              Rot(0,1) = -sin(theta);              Rot(0,2) = 0.0;
+    Rot(1,0) = sin(theta)*cos(alpha);   Rot(1,1) = -cos(theta)*cos(alpha);   Rot(1,2) = -sin(alpha);
+    Rot(2,0) = sin(theta)*sin(alpha);   Rot(2,1) = cos(theta)*sin(alpha);    Rot(2,2) = cos(alpha);
 }
 
-void HUMPlanner::transfMatrix(double alpha, double a, double d, double theta, double theta_offset, Matrix4d &T)
+void HUMPlanner::transfMatrix(double alpha, double a, double d, double theta, Matrix4d &T)
 {
     T = Matrix4d::Zero();
 
-    T(0,0) = cos(theta + theta_offset);            T(0,1) = -sin(theta + theta_offset);            T(0,2) = 0.0;         T(0,3) = a;
-    T(1,0) = sin(theta + theta_offset)*cos(alpha); T(1,1) = -cos(theta + theta_offset)*cos(alpha); T(1,2) = -sin(alpha); T(1,3) = -sin(alpha)*d;
-    T(2,0) = sin(theta + theta_offset)*sin(alpha); T(2,1) = cos(theta + theta_offset)*sin(alpha);  T(2,2) = cos(alpha);  T(2,3) = cos(alpha)*d;
+    T(0,0) = cos(theta);            T(0,1) = -sin(theta);            T(0,2) = 0.0;         T(0,3) = a;
+    T(1,0) = sin(theta)*cos(alpha); T(1,1) = -cos(theta)*cos(alpha); T(1,2) = -sin(alpha); T(1,3) = -sin(alpha)*d;
+    T(2,0) = sin(theta)*sin(alpha); T(2,1) = cos(theta)*sin(alpha);  T(2,2) = cos(alpha);  T(2,3) = cos(alpha)*d;
     T(3,0) = 0.0;                                  T(3,1) = 0.0;                                   T(3,2) = 0.0;         T(3,3) = 1.0;
 
 }
@@ -6279,7 +6268,7 @@ void HUMPlanner::directKinematicsSingleArm(int arm, std::vector<double>& posture
     T = mat_world;
 
     for (size_t i = 0; i < posture.size(); ++i){
-        this->transfMatrix(m_DH_arm.alpha.at(i),m_DH_arm.a.at(i),m_DH_arm.d.at(i), posture.at(i), m_DH_arm.theta_offset.at(i), T_aux);
+        this->transfMatrix(m_DH_arm.alpha.at(i),m_DH_arm.a.at(i),m_DH_arm.d.at(i), posture.at(i), T_aux);
         T = T * T_aux;
         Vector3d v;
 

@@ -70,7 +70,6 @@ typedef struct{
     vector<double> a; /**< distances between concecutive frames along the z axes in [mm] */
     vector<double> alpha; /**< angle around the x axes between consecutive z axes in [rad] */
     vector<double> theta; /**< angle around the z axes between consecutive x axes in [rad] */
-    vector<double> theta_offset; /**< in [rad]*/
 } DHparameters;
 
 /** this struct defines the barrett hand */
