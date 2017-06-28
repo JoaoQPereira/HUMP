@@ -6110,9 +6110,7 @@ void HUMPlanner::directKinematicsSingleArm(int arm, std::vector<double>& posture
             this->haPose.push_back(rpy[0]);
             this->haPose.push_back(rpy[1]);
             this->haPose.push_back(rpy[2]);
-
         }
-
     }
 
 }
