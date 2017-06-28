@@ -4110,14 +4110,19 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
     double max_ext = Lh+Ll+Lu;
     std::vector<double> shPos; this->getShoulderPos(arm_code,initPosture,shPos);
     Vector3d tar_pos(target.at(0),target.at(1),target.at(2));
-    if(approach || retreat){
+
+    if(approach || retreat)
+    {
         std::vector<double> rpy = {target.at(3),target.at(4),target.at(5)};
         Matrix3d Rot_tar; this->RPY_matrix(rpy,Rot_tar);
         double dist = approach_retreat.at(3);
+
         Vector3d v(approach_retreat.at(0),approach_retreat.at(1),approach_retreat.at(2));
         Vector3d vv = Rot_tar*v;
+
         tar_pos = tar_pos + dist*vv;
     }
+
     if(sqrt(pow(tar_pos(0) - shPos.at(0),2)+
             pow(tar_pos(1) - shPos.at(1),2)+
             pow(tar_pos(2) - shPos.at(2),2))>= max_ext){
@@ -5117,18 +5122,22 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                 int steps = this->getSteps(maxLimits, minLimits,initPosture,finalPosture_pre_grasp_ext);
 
 
-                if(straight_line){
+                if(straight_line)
+                {
                     bool init_coll = params.mov_specs.coll;
                     params.mov_specs.coll = false;
                     pre_post = 0;
                     FPosture = this->singleArmFinalPosture(mov_type,pre_post,params,finalPosture_pre_grasp,finalPosture);
                     params.mov_specs.coll = init_coll;
-                }else{
+                }
+                else
+                {
                     pre_post = 0;
                     FPosture = this->singleArmFinalPosture(mov_type,pre_post,params,finalPosture_pre_grasp,finalPosture);
                 }
 
-                if(FPosture){
+                if(FPosture)
+                {
                     // extend the final postures
                     finalPosture_ext = finalPosture;
                     finalPosture_ext.push_back(finalHand.at(0));
@@ -5144,11 +5153,14 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                     // calculate the approach boundary conditions
                     // the velocity approach is the maximum velocity reached at tau=0.5 of the trajectory with null boundary conditions
                     //
-                    if(this->setBoundaryConditions(mov_type,params,steps_app,finalPosture_pre_grasp_ext,finalPosture_ext,0)){
-                        if(coll){// collisions
+                    if(this->setBoundaryConditions(mov_type,params,steps_app,finalPosture_pre_grasp_ext,finalPosture_ext,0))
+                    {
+                        if(coll)
+                        {// collisions
                             pre_post = 1;
                             BPosture = this->singleArmBouncePosture(steps,mov_type,pre_post,params,initPosture,finalPosture_pre_grasp,bouncePosture_pre_grasp);
-                            if(BPosture){
+                            if(BPosture)
+                            {
                                 res->status = 0; res->status_msg = string("HUMP: trajectory planned successfully");
                                 res->time_steps.clear();
                                 res->trajectory_stages.clear(); res->trajectory_descriptions.clear();
@@ -5162,7 +5174,9 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                                 MatrixXd traj_pre_app; MatrixXd vel_pre_app; MatrixXd acc_pre_app; double timestep_pre_app;
                                 mod = 1;
                                 timestep_pre_app = this->getAcceleration(mov_type,steps,params,initPosture,finalPosture_pre_grasp_ext,bouncePosture_pre_grasp,traj_pre_app,vel_pre_app,acc_pre_app,success,mod);
-                                if(success){
+
+                                if(success)
+                                {
                                     // pre-approach
                                     res->time_steps.push_back(timestep_pre_app);
                                     res->trajectory_stages.push_back(traj_pre_app); res->trajectory_descriptions.push_back("plan");
@@ -5175,24 +5189,41 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                                     res->velocity_stages.push_back(vel_app);
                                     res->acceleration_stages.push_back(acc_app);
 
-                                }else{res->status = 50; res->status_msg = string("HUMP: final posture approach to grasp selection failed ");}
-                            }else{ res->status = 20; res->status_msg = string("HUMP: bounce posture pre grasp selection failed ");}
-                        }else{ // no collisions
+                                }
+                                else
+                                {
+                                    res->status = 50;
+                                    res->status_msg = string("HUMP: final posture approach to grasp selection failed ");
+                                }
+                            }
+                            else
+                            {
+                                res->status = 20;
+                                res->status_msg = string("HUMP: bounce posture pre grasp selection failed ");
+                            }
+                        }
+                        else
+                        { // no collisions
                             pre_post = 0;
                             FPosture = this->singleArmFinalPosture(mov_type,pre_post,params,finalPosture_pre_grasp,finalPosture);
-                            if(FPosture){
+
+                            if(FPosture)
+                            {
                                 res->status = 0; res->status_msg = string("HUMP: trajectory planned successfully ");
                                 res->time_steps.clear();
                                 res->trajectory_stages.clear(); res->trajectory_descriptions.clear();
                                 res->velocity_stages.clear();
                                 res->acceleration_stages.clear();
+
                                 // extend the final postures
                                 finalPosture_ext = finalPosture;
                                 finalPosture_ext.push_back(finalHand.at(0));
-                                for(size_t i=1;i<finalHand.size();++i){
+                                for(size_t i=1;i<finalHand.size();++i)
+                                {
                                     finalPosture_ext.push_back(finalHand.at(i));
                                 }
                                 bool success = true;
+
                                 // pre-approach stage
                                 MatrixXd traj; MatrixXd vel; MatrixXd acc; double timestep; mod = 1;
                                 timestep = this->getAcceleration(mov_type,steps,params,initPosture,finalPosture_pre_grasp_ext,traj,vel,acc,success,mod);
@@ -5205,19 +5236,45 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                                 mod = 2;
                                 int steps_app = this->getSteps(maxLimits, minLimits,finalPosture_pre_grasp_ext,finalPosture_ext);
                                 timestep = this->getAcceleration(mov_type,steps_app,params,finalPosture_pre_grasp_ext,finalPosture_ext,traj,vel,acc,success,mod);
-                                if(success){
+                                if(success)
+                                {
                                     res->time_steps.push_back(timestep);
                                     res->trajectory_stages.push_back(traj); res->trajectory_descriptions.push_back("approach");
                                     res->velocity_stages.push_back(vel);
                                     res->acceleration_stages.push_back(acc);
 
-                                }else{res->status = 50; res->status_msg = string("HUMP: final posture approach to grasp selection failed ");}
-                            }else{res->status = 30; res->status_msg = string("HUMP: final posture grasp selection failed ");}
+                                }
+                                else
+                                {
+                                    res->status = 50;
+                                    res->status_msg = string("HUMP: final posture approach to grasp selection failed ");
+                                }
+                            }
+                            else
+                            {
+                                res->status = 30; res->status_msg = string("HUMP: final posture grasp selection failed ");
+                            }
                         }
-                    }else{res->status = 50; res->status_msg = string("HUMP: final posture approach to grasp selection failed ");}
-                }else{res->status = 30; res->status_msg = string("HUMP: final posture grasp selection failed ");}
-            }else{res->status = 10; res->status_msg = string("HUMP: final posture pre grasp selection failed ");}
-        }else{ // no approach
+                    }
+                    else
+                    {
+                        res->status = 50; res->status_msg = string("HUMP: final posture approach to grasp selection failed ");
+                    }
+                }
+                else
+                {
+                    res->status = 30; res->status_msg = string("HUMP: final posture grasp selection failed ");
+                }
+            }
+            else
+            {
+                res->status = 10; res->status_msg = string("HUMP: final posture pre grasp selection failed ");
+            }
+        }
+
+
+        // no approach
+        else{
             pre_post = 0;
             FPosture = this->singleArmFinalPosture(mov_type,pre_post,params,initPosture,finalPosture);
 
@@ -5290,19 +5347,28 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                 res->status_msg = string("HUMP: final posture selection failed ");
             }
         }
-        if(coll){ // collisions
-            if(retreat && FPosture && BPosture){// retreat stage
-                if(straight_line){
+
+        // collisions
+        if(coll)
+        {
+            if(retreat && FPosture && BPosture)
+            {// retreat stage
+                if(straight_line)
+                {
                     bool init_coll = params.mov_specs.coll;
                     params.mov_specs.coll = false;
                     pre_post=2;
                     FPosture_post_grasp = this->singleArmFinalPosture(mov_type,pre_post,params,finalPosture,finalPosture_post_grasp);
                     params.mov_specs.coll = init_coll;
-                }else{
+                }
+                else
+                {
                     pre_post=2;
                     FPosture_post_grasp = this->singleArmFinalPosture(mov_type,pre_post,params,finalPosture,finalPosture_post_grasp);
                 }
-                if (FPosture_post_grasp){
+
+                if (FPosture_post_grasp)
+                {
                     res->status = 0; res->status_msg = string("HUMP: trajectory planned successfully ");
                     std::vector<double> finalPosture_post_grasp_ext = finalPosture_post_grasp;
 
@@ -5319,16 +5385,26 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                     // retreat stage
                     MatrixXd traj; MatrixXd vel; MatrixXd acc; double timestep; mod = 3; bool success = true;
                     timestep = this->getAcceleration(mov_type,steps_ret,params,finalPosture_ext,finalPosture_post_grasp_ext,traj,vel,acc,success,mod);
-                    if(success){
+                    if(success)
+                    {
                         res->time_steps.push_back(timestep);
                         res->trajectory_stages.push_back(traj); res->trajectory_descriptions.push_back("retreat");
                         res->velocity_stages.push_back(vel);
                         res->acceleration_stages.push_back(acc);
-
-                    }else{res->status = 50; res->status_msg = string("HUMP: final posture retreat from grasp selection failed ");}
-                }else{res->status = 40; res->status_msg = string("HUMP: final posture post grasp selection failed ");}
+                    }
+                    else
+                    {
+                        res->status = 50;
+                        res->status_msg = string("HUMP: final posture retreat from grasp selection failed ");
+                    }
+                }
+                else
+                {
+                    res->status = 40; res->status_msg = string("HUMP: final posture post grasp selection failed ");
+                }
             }
         }
+
         // no collisions
         else
         {
@@ -5356,14 +5432,25 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
                     // retreat stage
                     MatrixXd traj; MatrixXd vel; MatrixXd acc; double timestep; mod = 3; bool success = true;
                     timestep = this->getAcceleration(mov_type,steps_ret,params,finalPosture_ext,finalPosture_post_grasp_ext,traj,vel,acc,success,mod);
-                    if(success){
+                    if(success)
+                    {
                         res->time_steps.push_back(timestep);
                         res->trajectory_stages.push_back(traj); res->trajectory_descriptions.push_back("retreat");
                         res->velocity_stages.push_back(vel);
                         res->acceleration_stages.push_back(acc);
 
-                    }else{res->status = 50; res->status_msg = string("HUMP: final posture retreat from grasp selection failed ");}
-                }else{res->status = 40; res->status_msg = string("HUMP: final posture post grasp selection failed ");}
+                    }
+                    else
+                    {
+                        res->status = 50;
+                        res->status_msg = string("HUMP: final posture retreat from grasp selection failed ");
+                    }
+                }
+                else
+                {
+                    res->status = 40;
+                    res->status_msg = string("HUMP: final posture post grasp selection failed ");
+                }
             }
         }
     }catch (const string message){throw message;
