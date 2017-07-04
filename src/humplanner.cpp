@@ -1344,7 +1344,7 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
 
         //Hand
         stream << string("var Hand {i in 1..3} = T_W_H[i,4]  \n");
-        stream << string(";  \n");
+        stream << string(";  \n \n");
 
         stream << string("# Hand orientation \n");
         stream << string("var x_H {j in 1..3} = T_W_H [j,1]; \n");
@@ -1439,7 +1439,7 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
 
         //Hand
         stream << string("var Hand {i in 1..3,j in Iterations} = T_W_H[i,4,j]  \n");
-        stream << string(";  \n");
+        stream << string(";  \n \n");
 
 
         stream << string("# Hand orientation \n");
@@ -2619,7 +2619,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     for(int i=0; i<tolsArm.size(); ++i)
     {
         if(tolsArm.at(i)!=0.00)
-            points_arm = points_arm + 1;
+            ++points_arm;
     }
 
     string tolArm1 =  boost::str(boost::format("%.2f") % tolsArm.at(0)); boost::replace_all(tolArm1,",",".");
@@ -2633,7 +2633,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
 
 
     PostureMod << string("var Points_Arm {j in 1..")+ to_string(points_arm) + string(", i in 1..4} = #xyz + radius\n");
-    int j = 1;
+    int j=1;
 
 //    PostureMod << string("if ( j=1 ) then 	(Shoulder[i]+Elbow[i])/2  \n");
 //    PostureMod << string("else	if ( j=2 ) then 	Elbow[i] \n");
@@ -2652,7 +2652,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     {
         PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i]+Point4[i])/2 \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
-        j = j + 1;
+        ++j;
     }
 
     if(tolsArm.at(0)!=0.00 && tolsArm.at(1)!=0.00)
@@ -2664,7 +2664,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i]+Point2[i])/2 \n");
 
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
-        j = j + 1;
+        ++j;
     }
 
     if(tolsArm.at(1)!=0.00)
@@ -2673,7 +2673,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
             PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point2[i] \n");
         else
             PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point2[i] \n");
-        j = j + 1;
+        ++j;
     }
 
     if(tolsArm.at(2)!=0.00)
@@ -2684,7 +2684,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point2[i]+Point4[i])/2 \n");
 
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm3+string("\n");
-        j = j + 1;
+        ++j;
     }
 
 
@@ -2694,7 +2694,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
             PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point4[i] \n");
         else
             PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point4[i] \n");
-        j = j + 1;
+        ++j;
     }
 
 
@@ -2706,10 +2706,10 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i]+Point6[i])/2 \n");
 
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
-        j = j + 1;
+        ++j;
 
         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point6[i] \n");
-        j = j + 1;
+        ++j;
     }
     else
     {
@@ -2718,7 +2718,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
         else
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i]+Point8[i])/2 \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
-        j = j + 1;
+        ++j;
     }
 
 
@@ -2726,27 +2726,27 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     {
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point6[i] + Point8[i]/2) \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm7+string("\n");
-        j = j + 1;
+        ++j;
     }
 
     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i] \n");
-    j = j + 1;
+    ++j;
 
 
     if(tolsArm.at(9)!=0.00)
     {
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i]+Point10[i])/2  \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
-        j = j + 1;
+        ++j;
 
         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point10[i] \n");
-        j = j + 1;
+        ++j;
     }
     else
     {
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i]+Point12[i])/2  \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
-        j = j + 1;
+        ++j;
     }
 
 
@@ -2754,20 +2754,16 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     {
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point10[i] + Point11[i])/2 \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm11+string("\n");
-        j = j + 1;
+        ++j;
     }
 
     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point12[i] \n");
-    j = j + 1;
 
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      Point12[i]+0.45*(Hand[i]-Point12[i]) \n");
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm13+string("\n");
-    j = j + 1;
+    PostureMod << string("else    if ( j=") + to_string(j+1) + string(" && i<4 ) then      Point12[i]+0.45*(Hand[i]-Point12[i]) \n");
+    PostureMod << string("else    if ( j=") + to_string(j+1) + string(" && i=4 ) then      ")+tolArm13+string("\n");
 
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      Point12[i]+0.45*(Hand[i]-Point12[i]) \n");
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm14+string("\n");
-    j = j + 1;
-
+    PostureMod << string("else    if ( j=") + to_string(j+2) + string(" && i<4 ) then      Point12[i]+0.45*(Hand[i]-Point12[i]) \n");
+    PostureMod << string("else    if ( j=") + to_string(j+2) + string(" && i=4 ) then      ")+tolArm14+string("\n");
     /*
     PostureMod << string("else	if ( j=10 ) then 	(Finger1_1[i]+Finger1_2[i])/2 \n");
     PostureMod << string("else	if ( j=11 ) then 	(Finger2_1[i]+Finger2_2[i])/2 \n");
@@ -2783,31 +2779,15 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     PostureMod << string("else	if ( j=21 ) then 	Finger3_tip[i] \n");
     */
 
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger1_1[i] \n");
-    j = j + 1;
-
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger2_1[i] \n");
-    j = j + 1;
-
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger3_1[i] \n");
-    j = j + 1;
-
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger1_2[i] \n");
-    j = j + 1;
-
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger2_2[i] \n");
-    j = j + 1;
-
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger3_2[i] \n");
-    j = j + 1;
-
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger1_tip[i] \n");
-    j = j + 1;
-
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger2_tip[i] \n");
-    j = j + 1;
-
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger3_tip[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+3) + string(" ) then      Finger1_1[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+4) + string(" ) then      Finger2_1[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+5) + string(" ) then      Finger3_1[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+6) + string(" ) then      Finger1_2[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+7) + string(" ) then      Finger2_2[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+8) + string(" ) then      Finger3_2[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+9) + string(" ) then      Finger1_tip[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+10) + string(" ) then      Finger2_tip[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+11) + string(" ) then      Finger3_tip[i] \n");
 
 
 //    PostureMod << string("else	if ( j=7 ) then 	Finger1_1[i] \n");
@@ -3478,12 +3458,11 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      for(int i=0; i<tolsArm.size(); ++i)
      {
          if(tolsArm.at(i)!=0.00)
-             points_arm = points_arm + 1;
+            ++points_arm;
      }
 
      // Points of the arm
-     int j = 1;
-
+     int j=1;
      if (place)
      {
          PostureMod << string("var Points_Arm {j in 1..")+ to_string(points_arm + 3) + string(", i in 1..4,k in Iterations} = \n");
@@ -3497,7 +3476,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      {
         PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point4[i,k])/2 \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
-        j = j + 1;
+        ++j;
      }
 
 
@@ -3508,7 +3487,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
          else
              PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point2[i,k])/2 \n");
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
-         j = j + 1;
+         ++j;
      }
 
 
@@ -3518,7 +3497,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
              PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point2[i,k] \n");
          else
              PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point2[i,k] \n");
-         j = j + 1;
+         ++j;
      }
 
 
@@ -3529,7 +3508,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
          else
              PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point2[i,k]+Point4[i,k])/2 \n");
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm3+string("\n");
-         j = j + 1;
+         ++j;
      }
 
 
@@ -3539,7 +3518,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
              PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point4[i,k] \n");
          else
              PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point4[i,k] \n");
-         j = j + 1;
+         ++j;
      }
 
      if(tolsArm.at(5)!=0.00)
@@ -3550,9 +3529,9 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point6[i,k])/2 \n");
 
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
-         j = j + 1;
+         ++j;
          PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point6[i,k] \n");
-         j = j + 1;
+         ++j;
      }
      else
      {
@@ -3561,7 +3540,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
          else
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point8[i,k])/2 \n");
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
-         j = j + 1;
+         ++j;
      }
 
 
@@ -3569,28 +3548,28 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      {
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point6[i,k] + Point8[i,k]/2) \n");
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm7+string("\n");
-         j = j + 1;
+         ++j;
      }
 
 
      PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i,k] \n");
-     j = j + 1;
+     ++j;
 
 
      if(tolsArm.at(9)!=0.00)
      {
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i,k]+Point10[i,k])/2  \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
-        j = j + 1;
+        ++j;
 
         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point10[i,k] \n");
-        j = j + 1;
+        ++j;
      }
      else
      {
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i,k]+Point12[i,k])/2  \n");
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
-         j = j + 1;
+         ++j;
      }
 
 
@@ -3598,55 +3577,32 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      {
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point10[i,k] + Point11[i,k])/2 \n");
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm11+string("\n");
-         j = j + 1;
+         ++j;
      }
 
      PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point12[i,k] \n");
-     j = j + 1;
 
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      Point12[i,k]+0.45*(Hand[i,k]-Point12[i,k]) \n");
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm13+string("\n");
-     j = j + 1;
+     PostureMod << string("else    if ( j=") + to_string(j+1) + string(" && i<4 ) then      Point12[i,k]+0.45*(Hand[i,k]-Point12[i,k]) \n");
+     PostureMod << string("else    if ( j=") + to_string(j+1) + string(" && i=4 ) then      ")+tolArm13+string("\n");
 
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      Point12[i,k]+0.45*(Hand[i,k]-Point12[i,k]) \n");
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm14+string("\n");
-     j = j + 1;
+     PostureMod << string("else    if ( j=") + to_string(j+2) + string(" && i<4 ) then      Point12[i,k]+0.45*(Hand[i,k]-Point12[i,k]) \n");
+     PostureMod << string("else    if ( j=") + to_string(j+2) + string(" && i=4 ) then      ")+tolArm14+string("\n");
 
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger1_1[i,k] \n");
-     j = j + 1;
-
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger2_1[i,k] \n");
-     j = j + 1;
-
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger3_1[i,k] \n");
-     j = j + 1;
-
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger1_2[i,k] \n");
-     j = j + 1;
-
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger2_2[i,k] \n");
-     j = j + 1;
-
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger3_2[i,k] \n");
-     j = j + 1;
-
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger1_tip[i,k] \n");
-     j = j + 1;
-
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger2_tip[i,k] \n");
-     j = j + 1;
-
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Finger3_tip[i,k] \n");
-     j = j +1 ;
-
+     PostureMod << string("else    if ( j=") + to_string(j+3) + string(" ) then      Finger1_1[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+4) + string(" ) then      Finger2_1[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+5) + string(" ) then      Finger3_1[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+6) + string(" ) then      Finger1_2[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+7) + string(" ) then      Finger2_2[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+8) + string(" ) then      Finger3_2[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+9) + string(" ) then      Finger1_tip[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+10) + string(" ) then      Finger2_tip[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+11) + string(" ) then      Finger3_tip[i,k] \n");
 
      if (place)
      {
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then 	Obj2Transp[i,k] \n");
-         j = j + 1;
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then 	Obj2Transp_1[i,k] \n");
-         j = j + 1;
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then 	Obj2Transp_2[i,k] \n");
+         PostureMod << string("else    if ( j=") + to_string(j+12) + string(" ) then 	Obj2Transp[i,k] \n");
+         PostureMod << string("else    if ( j=") + to_string(j+13) + string(" ) then 	Obj2Transp_1[i,k] \n");
+         PostureMod << string("else    if ( j=") + to_string(j+14) + string(" ) then 	Obj2Transp_2[i,k] \n");
      }
 
 
