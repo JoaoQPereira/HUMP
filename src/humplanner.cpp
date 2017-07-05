@@ -4874,16 +4874,18 @@ bool HUMPlanner::setBoundaryConditions(int mov_type,hump_params &params, int ste
             }
             for (std::size_t i = 0; i<new_posture_ext.size(); ++i){
                 //vel_0
-                double vel_0_value =((double)10*(new_posture_ext.at(i)-initPosture.at(i)))/(11*timestep);
+                double vel_0_value =((double)(new_posture_ext.at(i)-initPosture.at(i)))/timestep;
                 vel_0.push_back(vel_0_value);
                 //vel_f
-                double vel_f_value =((double)10*(new_posture_ext.at(i)-initPosture.at(i)))/(11*timestep);
+                double vel_f_value =((double)(new_posture_ext.at(i)-initPosture.at(i)))/timestep;
                 vel_f.push_back(vel_f_value);
                 //acc_0
-                double acc_0_value =(double)2*vel_0_value/timestep;
+                //double acc_0_value =(double)2*vel_0_value/timestep;
+                double acc_0_value = 0.0;
                 acc_0.push_back(acc_0_value);
                 //acc_f
-                double acc_f_value =(double)2*vel_f_value/timestep;
+                //double acc_f_value =(double)2*vel_f_value/timestep;
+                double acc_f_value = 0.0;
                 acc_f.push_back(acc_f_value);
             }
         }
@@ -5023,7 +5025,7 @@ bool HUMPlanner::directTrajectory(int mov_type,int steps,hump_params &tols, std:
                         vel_app_ret(i,j) = vel_0.at(j);
                     }else{
                         Traj(i,j) = new_posture_ext.at(j);
-                        vel_app_ret(i,j) = 1.1*(new_posture_ext.at(j) - init_posture_0.at(j))/timestep;
+                        vel_app_ret(i,j) = (new_posture_ext.at(j) - init_posture_0.at(j))/timestep;
                     }
                 }
                 hand_tar.at(0) = hand_tar.at(0) + delta_x;
@@ -5137,11 +5139,11 @@ bool HUMPlanner::directVelocity(int steps,hump_params &tols, std::vector<double>
         for (int i = 0; i <= steps;++i){
             for (std::size_t j = 0; j<initPosture.size(); ++j){
                 if((i==steps) && (app==1)){
-                    Vel(i,j) =  vel_app_ret(i,j)*(1-pow(tau.at(i),4));
+                    Vel(i,j) =  0.0;
                 }else if((i==0) && (ret==1)){
-                    Vel(i,j) =  vel_app_ret(i,j)*(2*pow(tau.at(i),3)-pow(tau.at(i),4));
+                    Vel(i,j) =  0.0;
                 }else{
-                    Vel(i,j) =  vel_app_ret(i,j)*(1+2*pow(tau.at(i),3)-2*pow(tau.at(i),4));
+                    Vel(i,j) =  vel_app_ret(i,j);
                 }
             }
         }
@@ -5219,12 +5221,22 @@ bool HUMPlanner::directAcceleration(int steps,hump_params &tols, std::vector<dou
     if((app==1 || ret==1) && straight_line){
         for (int i = 0; i <= steps;++i){
             for (std::size_t j = 0; j<initPosture.size(); ++j){
-                if((i==steps) && (app==1)){
-                    Acc(i,j) =  ((2/timestep)*vel_app_ret(i,j))*(1-pow(tau.at(i),3));
-                }else if((i==0) && (ret==1)){
-                    Acc(i,j) =  ((2/timestep)*vel_app_ret(i,j))*(2*pow(tau.at(i),2)-pow(tau.at(i),3));
-                }else{
-                    Acc(i,j) =  ((2/timestep)*vel_app_ret(i,j))*(2*pow(tau.at(i),2)-4*pow(tau.at(i),3));
+                if(app==1){
+                    if(i==0){
+                        Acc(i,j) = 0.0;
+                    }else if(i==steps){
+                        Acc(i,j) = (-vel_app_ret(i,j))/timestep;
+                    }else{
+                        Acc(i,j) = (vel_app_ret(i,j) - vel_app_ret(i+1,j))/timestep;
+                    }
+                }else if(ret==1){
+                    if(i==0){
+                        Acc(i,j) = vel_app_ret(i,j)/timestep;
+                    }else if(i==steps){
+                        Acc(i,j) = 0.0;
+                    }else{
+                       Acc(i,j) = (vel_app_ret(i,j) - vel_app_ret(i+1,j))/timestep;
+                    }
                 }
             }
         }
