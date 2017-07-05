@@ -2955,7 +2955,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
 
     // constraints with the body
     if(coll){
-        this->writeBodyConstraints(PostureMod,true);
+        //this->writeBodyConstraints(PostureMod,true);
     }
 
     PostureMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n\n\n");
@@ -4123,7 +4123,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
 
      }
      // constraints with the body
-     this->writeBodyConstraints(PostureMod,false);
+     //this->writeBodyConstraints(PostureMod,false);
 
      PostureMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n\n\n");
 
