@@ -542,12 +542,13 @@ private:
     double getAcceleration(int mov_type, int steps, hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc, bool &success, int mod);
 
     /**
-     * @brief This method writes down the dimensions of the body ofthe humanoid
+     * @brief writeBodyDim
      * @param h_xsize
      * @param h_ysize
+     * @param h_zsize
      * @param stream
      */
-    void writeBodyDim(double h_xsize,double h_ysize,std::ofstream& stream);
+    void writeBodyDim(double h_xsize,double h_ysize, double h_zsize, ofstream &stream);
 
     /**
      * @brief This method writes down the D-H parameters of the arms of the humanoid robot
@@ -728,7 +729,7 @@ private:
      * @param stream
      * @param final
      */
-    void writeBodyConstraints(ofstream &stream, bool final);
+    void writeBodyConstraints(ofstream &stream, bool final,  std::vector<double> tolsArm);
 
     /**
      * @brief RPY_matrix

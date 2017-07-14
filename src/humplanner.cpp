@@ -314,19 +314,23 @@ HumanHand HUMPlanner::getHumanHand()
     return this->hhand;
 }
 
-void HUMPlanner::writeBodyDim(double h_xsize,double h_ysize, ofstream &stream)
+void HUMPlanner::writeBodyDim(double h_xsize,double h_ysize, double h_zsize, ofstream &stream)
 {
 
     string bodyxsize=  boost::str(boost::format("%.2f") % (h_xsize/2));
     boost::replace_all(bodyxsize,",",".");
     string bodyysize=  boost::str(boost::format("%.2f") % (h_ysize/2));
     boost::replace_all(bodyysize,",",".");
+    string bodyzsize=  boost::str(boost::format("%.2f") % (h_zsize/2));
+    boost::replace_all(bodyzsize,",",".");
 
     stream << string("# BODY INFO \n");
     stream << string("param body := \n");
     stream << to_string(1)+string(" ")+bodyxsize+string("\n");
-    stream << to_string(2)+string(" ")+bodyysize+string(";\n");
+    stream << to_string(2)+string(" ")+bodyysize+string("\n");
+    stream << to_string(3)+string(" ")+bodyzsize+string(";\n");
 }
+
 
 void HUMPlanner::writeArmDHParams(DHparameters dh, ofstream &stream, int k)
 {
@@ -998,7 +1002,7 @@ void HUMPlanner::writePI(ofstream &stream)
 void HUMPlanner::writeBodyDimMod(ofstream &stream)
 {
     stream << string("# Body info \n");
-    stream << string("param body {i in 1..2}; \n");
+    stream << string("param body {i in 1..3}; \n");
 }
 
 void HUMPlanner::writeArmDHParamsMod(ofstream &stream)
@@ -2291,7 +2295,7 @@ void HUMPlanner::writeObjective(ofstream &stream, bool final)
 
 }
 
-void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final)
+void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final, std::vector<double> tolsArm)
 {
     stream << string("# Constraints with the body: the body is modeled as a cylinder \n");
     if (final){
@@ -2305,7 +2309,30 @@ void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final)
         stream << string("subject to BodyArm_Wrist: (Point12[1]/body[1])^2 + (Point12[2]/body[2])^2 >= 1; \n");
         stream << string("subject to BodyArm_Hand:  (Hand[1]/body[1])^2  + (Hand[2]/body[2])^2  >= 1; \n\n");
 
-    }else{
+
+//        if(tolsArm.at(5)!=0)
+//            stream << string("subject to BodyArm_Point6:  ((Point6[1]/body[1])^(2/e2) + "
+//                             "(Point6[2]/body[2])^(2/e2))^(e2/e1) + (Point6[3]/body[3])^(2/e1)>= 1; \n");
+
+//        stream << string("subject to BodyArm_Point8: ((Point8[1]/body[1])^(2/e2) + "
+//                         "(Point8[2]/body[2])^(2/e2))^(e2/e1) + (Point8[3]/body[3])^(2/e1)>= 1; \n");
+
+//        if(tolsArm.at(9)!=0)
+//            stream << string("subject to BodyArm_Point10:  ((Point10[1]/body[1])^(2/e2) + "
+//                             "(Point10[2]/body[2])^(2/e2))^(e2/e1) + (Point10[3]/body[3])^(2/e1)>= 1; \n");
+
+
+//        stream << string("subject to BodyArm_Point12:  ((Point12[1]/body[1])^(2/e2) + "
+//                         "(Point12[2]/body[2])^(2/e2))^(e2/e1) + (Point12[3]/body[3])^(2/e1)>= 1; \n");
+
+
+//        stream << string("subject to BodyArm_Hand: ((Hand[1]/body[1])^(2/e2) + "
+//                         "(Hand[2]/body[2])^(2/e2))^(e2/e1) + (Hand[3]/body[3])^(2/e1)>= 1; \n");
+
+
+    }
+    else
+    {
         //stream << string("subject to BodyArm_constr{j in 1..15,l in Iterations}: (Points_Arm[j,1,l]/body[1])^2 + (Points_Arm[j,2,l]/body[2])^2 >= 1; \n");
 
 //        stream << string("subject to BodyArm_Elbow{l in Iterations}: (Elbow[1,l]/body[1])^2 + (Elbow[2,l]/body[2])^2 >= 1; \n");
@@ -2316,8 +2343,28 @@ void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final)
         stream << string("subject to BodyArm_Wrist{l in Iterations}: (Point12[1,l]/body[1])^2 + (Point12[2,l]/body[2])^2 >= 1; \n");
         stream << string("subject to BodyArm_Hand{l in Iterations}:  (Hand[1,l]/body[1])^2  + (Hand[2,l]/body[2])^2  >= 1; \n\n");
 
+
+//        if(tolsArm.at(5)!=0)
+//            stream << string("subject to BodyArm_Point6{l in Iterations}:  ((Point6[1,l]/body[1])^(2/e2) + "
+//                             "(Point6[2,l]/body[2])^(2/e2))^(e2/e1) + (Point6[3,l]/body[3])^(2/e1)>= 1; \n");
+
+//        stream << string("subject to BodyArm_Point8{l in Iterations}: ((Point8[1,l]/body[1])^(2/e2) + "
+//                         "(Point8[2,l]/body[2])^(2/e2))^(e2/e1) + (Point8[3,l]/body[3])^(2/e1)>= 1; \n");
+
+//        if(tolsArm.at(9)!=0)
+//            stream << string("subject to BodyArm_Point10{l in Iterations}:  ((Point10[1,l]/body[1])^(2/e2) + "
+//                             "(Point10[2,l]/body[2])^(2/e2))^(e2/e1) + (Point10[3,l]/body[3])^(2/e1)>= 1; \n");
+
+
+//        stream << string("subject to BodyArm_Point12{l in Iterations}:  ((Point12[1,l]/body[1])^(2/e2) + "
+//                         "(Point12[2,l]/body[2])^(2/e2))^(e2/e1) + (Point12[3,l]/body[3])^(2/e1)>= 1; \n");
+
+
+//        stream << string("subject to BodyArm_Hand{l in Iterations}: ((Hand[1,l]/body[1])^(2/e2) + "
+//                         "(Hand[2,l]/body[2])^(2/e2))^(e2/e1) + (Hand[3,l]/body[3])^(2/e1)>= 1; \n");
     }
 }
+
 
 void HUMPlanner::RPY_matrix(std::vector<double> rpy, Matrix3d &Rot)
 {
@@ -2465,7 +2512,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
 
     // Body dimension
     if(coll){
-        this->writeBodyDim(this->torso_size.at(0),this->torso_size.at(1),PostureDat);
+        this->writeBodyDim(this->torso_size.at(0),this->torso_size.at(1), this->torso_size.at(2), PostureDat);
     }
     // D-H Parameters of the Arm
     this->writeArmDHParams(dh_arm,PostureDat,k);
@@ -2955,7 +3002,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
 
     // constraints with the body
     if(coll){
-        //this->writeBodyConstraints(PostureMod,true);
+        //this->writeBodyConstraints(PostureMod,true, tolsArm);
     }
 
     PostureMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n\n\n");
@@ -3077,7 +3124,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      boost::replace_all(tottime_str,",",".");
      PostureDat << string("param TotalTime :=")+tottime_str+string(";\n");
      // Body dimension
-     this->writeBodyDim(this->torso_size.at(0),this->torso_size.at(1),PostureDat);
+     this->writeBodyDim(this->torso_size.at(0),this->torso_size.at(1), this->torso_size.at(2), PostureDat);
 
      // D-H Parameters of the Arm
      this->writeArmDHParams(dh,PostureDat,k);
@@ -4123,7 +4170,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
 
      }
      // constraints with the body
-     //this->writeBodyConstraints(PostureMod,false);
+     //this->writeBodyConstraints(PostureMod,false, tolsArm);
 
      PostureMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n\n\n");
 
