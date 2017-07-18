@@ -216,6 +216,30 @@ public:
     void getTorsoSize(vector<double>& tsize);
 
     /**
+     * @brief setTorsoPosition
+     * @param tpos
+     */
+    void setTorsoPosition(vector<double>& tpos);
+
+    /**
+     * @brief getTorsoPosition
+     * @param tpos
+     */
+    void getTorsoPosition(vector<double>& tpos);
+
+    /**
+     * @brief setTorsoOrientation
+     * @param tor
+     */
+    void setTorsoOrientation(vector<double>& tor);
+
+    /**
+     * @brief getTorsoOrientation
+     * @param tor
+     */
+    void getTorsoOrientation(vector<double>& tor);
+
+    /**
      * @brief setDH_rightArm
      * @param p
      */
@@ -317,6 +341,8 @@ private:
     std::vector<double> minLeftLimits; /**< minimum left limits */
     std::vector<double> maxLeftLimits; /**< maximum left limits */
     std::vector<double> torso_size; /**< size of the torso: xsize, ysize, zsize */
+    std::vector<double> torso_pos; /**< position of the torso: xpos, ypos, zpos */
+    std::vector<double> torso_or; /**< orientation of the torso: xor, yor, zor */
     DHparameters DH_rightArm; /**< current D-H parameters of the right arm */
     DHparameters DH_leftArm; /**< current D-H parameters of the left arm */
     BarrettHand bhand; /**< parameters of the barrett hand */
@@ -542,13 +568,13 @@ private:
     double getAcceleration(int mov_type, int steps, hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc, bool &success, int mod);
 
     /**
-     * @brief writeBodyDim
+     * @brief writeBodyInfo
      * @param h_xsize
      * @param h_ysize
      * @param h_zsize
      * @param stream
      */
-    void writeBodyDim(double h_xsize,double h_ysize, double h_zsize, ofstream &stream);
+    void writeBodyInfo(std::vector<double> torso_pos, std::vector<double> torso_size, std::vector<double> torso_or, ofstream &stream);
 
     /**
      * @brief This method writes down the D-H parameters of the arms of the humanoid robot
@@ -671,10 +697,10 @@ private:
     void writePI(std::ofstream& stream);
 
     /**
-     * @brief writeBodyDimMod
+     * @brief writeBodyInfoMod
      * @param stream
      */
-    void writeBodyDimMod(ofstream &stream);
+    void writeBodyInfoMod(ofstream &stream);
 
     /**
      * @brief writeArmDHParamsMod
@@ -708,6 +734,12 @@ private:
     void writeRotMatObsts(ofstream &stream);
 
     /**
+     * @brief writeRotMatBody
+     * @param stream
+     */
+    void writeRotMatBody(ofstream &stream);
+
+    /**
      * @brief writeArmDirKin
      * @param stream
      * @param matWorldToArm
@@ -728,8 +760,10 @@ private:
      * @brief writeBodyConstraints
      * @param stream
      * @param final
+     * @param tolsArm
+     * @param points_arm
      */
-    void writeBodyConstraints(ofstream &stream, bool final,  std::vector<double> tolsArm);
+    void writeBodyConstraints(ofstream &stream, bool final, std::vector<double> tolsArm, int npoints, std::vector<int> point_arm);
 
     /**
      * @brief RPY_matrix
