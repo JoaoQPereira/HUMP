@@ -277,13 +277,13 @@ public:
      * @brief setHead
      * @param hhead
      */
-    void setHead(BodyPart& hhead);
+    void setHead(HumanoidPart& hhead);
 
     /**
      * @brief getHead
      * @return
      */
-    BodyPart getHead();
+    HumanoidPart getHead();
 
     /**
      * @brief setHumanHand
@@ -358,7 +358,8 @@ private:
     DHparameters DH_rightArm; /**< current D-H parameters of the right arm */
     DHparameters DH_leftArm; /**< current D-H parameters of the left arm */
     BarrettHand bhand; /**< parameters of the barrett hand */
-    BodyPart head; /**< parameters of the robot' head */
+    HumanoidPart head; /**< parameters of the robot' head */
+    HumanoidPart torso; /**z
     HumanHand hhand; /**< parameters of the human hand */
 
     /**

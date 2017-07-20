@@ -101,6 +101,20 @@ typedef struct{
     DHparameters finger_specs; /**< the Denavit-Hartenberg parameters of the finger */
 } HumanFinger;
 
+
+/** this struct defines a generic part of a robot body */
+typedef struct{
+    double Xpos; /**< position of the part along the x axis in [mm] */
+    double Ypos; /**< position of the part along the y axis in [mm] */
+    double Zpos; /**< position of the part along the z axis in [mm] */
+    double Roll; /**< orientation of the part around the z axis in [rad] */
+    double Pitch; /**< orientation of the part around the y axis in [rad] */
+    double Yaw; /**< orientation of the part around the x axis in [rad] */
+    double Xsize; /**< size of the part along the x axis in [mm] */
+    double Ysize; /**< size of the part along the y axis in [mm] */
+    double Zsize; /**< size of the part along the z axis in [mm] */
+} HumanoidPart;
+
 /** this struct defines a human thumb */
 typedef struct{
     double uTx; /**<  position of the thumb with respect to the center of the palm along the x axis in [mm] */
@@ -120,6 +134,7 @@ typedef struct{
 typedef struct{
     int arm_code; /**< the code of the arm: 0 = both arms, 1 = right arm, 2 = left arm */
     int hand_code;/**< the code of the hand: 0 = human hand, 1 = barrett hand */
+    int head_code; /**< the code of the head: 0 = wobot without head, 1 = robot with head */
     int griptype; /**< the type of the grip */
     string mov_infoline; /**< description of the movement */
     double dHO;/**< distanche hand-target*/
@@ -140,6 +155,7 @@ typedef struct{
     bool use_move_plane; /**< true to constrain the end-effector to move on a plane in move movements, false otherwise*/
     std::vector<double> plane_params; /**< plane cartesian parameters in move movements: a*x+b*y+c*z+d=0. a=plane_params(0), b=plane_params(1), c=plane_params(2), d=plane_params(3) */
 }mov_params;
+
 /** this struct defines the boundary conditions of the movement*/
 typedef struct{
     vector<double> vel_0; /**< initial velocity of the joints in [rad/s] */
@@ -181,8 +197,6 @@ typedef struct{
     vector<double> time_steps; /**< sequence of each time steps for each trajectory */
     vector<string> trajectory_descriptions;/**< description of the trajectories */
 }planning_result;
-
-
 
 } // namespace HUMotion
 

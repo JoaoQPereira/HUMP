@@ -304,6 +304,10 @@ void HUMPlanner::getTorsoOrientation(vector<double> &tor)
     tor = this->torso_or;
 }
 
+void HUMPlanner::setTorso(HumanoidPart& htorso)
+{
+    this->torso = htorso;
+}
 
 void HUMPlanner::setDH_rightArm(DHparameters &p)
 {
