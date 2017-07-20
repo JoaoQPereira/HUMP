@@ -24,7 +24,7 @@ HUMPlanner::HUMPlanner(string name = string ("Default Planner"))
     this->maxRightLimits = vector<double>(joints_arm+joints_hand);
     this->maxLeftLimits= vector<double>(joints_arm+joints_hand);
 
-    this->torso_size = {0,0,0};
+//    this->torso_size = {0,0,0};
 }
 
 
@@ -45,9 +45,7 @@ HUMPlanner::HUMPlanner(const HUMPlanner &hp)
     this->maxRightLimits = hp.maxRightLimits;
     this->maxLeftLimits = hp.maxLeftLimits;
 
-    this->torso_size = hp.torso_size;
-    this->torso_pos = hp.torso_pos;
-    this->torso_or = hp.torso_or;
+    this->torso = hp.torso;
 
     this->DH_rightArm = hp.DH_rightArm;
     this->DH_leftArm = hp.DH_leftArm;
@@ -268,42 +266,15 @@ void HUMPlanner::getLeftMaxLimits(vector<double> &max_ll)
     }
 }
 
-
-void HUMPlanner::setTorsoSize(vector<double> &tsize)
+void HUMPlanner::setTorso(HumanoidPart& htorso)
 {
-    this->torso_size = tsize;
+    this->torso = htorso;
 }
 
-
-void HUMPlanner::getTorsoSize(vector<double> &tsize)
-{    
-    tsize = this->torso_size;
-}
-
-
-void HUMPlanner::setTorsoPosition(vector<double> &tpos)
+HumanoidPart HUMPlanner::getTorso()
 {
-    this->torso_pos= tpos;
+    return this->torso;
 }
-
-
-void HUMPlanner::getTorsoPosition(vector<double> &tpos)
-{
-    tpos = this->torso_pos;
-}
-
-
-void HUMPlanner::setTorsoOrientation(vector<double> &tor)
-{
-    this->torso_or= tor;
-}
-
-
-void HUMPlanner::getTorsoOrientation(vector<double> &tor)
-{
-    tor = this->torso_or;
-}
-
 
 void HUMPlanner::setDH_rightArm(DHparameters &p)
 {
@@ -967,7 +938,7 @@ void HUMPlanner::writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obst
 
     if(head_code!=0)
     {
-        BodyPart head = this->getHead();
+        HumanoidPart head = this->getHead();
 
         string headx =  boost::str(boost::format("%.2f") % (head.Ypos)); boost::replace_all(headx,",",".");
         string heady =  boost::str(boost::format("%.2f") % (head.Ypos)); boost::replace_all(heady,",",".");
@@ -995,19 +966,17 @@ void HUMPlanner::writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obst
     }
 
 
-    std::vector<double> torso_position; this->getTorsoPosition(torso_position);
-    std::vector<double> torso_orientation; this->getTorsoOrientation(torso_orientation);
-    std::vector<double> torso_dimension; this->getTorsoSize(torso_dimension);
+    HumanoidPart torso = this->getTorso();
 
-    string bodyx =  boost::str(boost::format("%.2f") % (torso_position.at(0))); boost::replace_all(bodyx,",",".");
-    string bodyy =  boost::str(boost::format("%.2f") % (torso_position.at(1))); boost::replace_all(bodyy,",",".");
-    string bodyz =  boost::str(boost::format("%.2f") % (torso_position.at(2))); boost::replace_all(bodyz,",",".");
-    string bodyxsize =  boost::str(boost::format("%.2f") % (torso_dimension.at(0)/2)); boost::replace_all(bodyxsize,",",".");
-    string bodyysize =  boost::str(boost::format("%.2f") % (torso_dimension.at(1)/2)); boost::replace_all(bodyysize,",",".");
-    string bodyzsize =  boost::str(boost::format("%.2f") % (torso_dimension.at(2)/2)); boost::replace_all(bodyzsize,",",".");
-    string bodyroll =  boost::str(boost::format("%.2f") % (torso_orientation.at(0))); boost::replace_all(bodyroll,",",".");
-    string bodypitch =  boost::str(boost::format("%.2f") % (torso_orientation.at(1))); boost::replace_all(bodypitch,",",".");
-    string bodyyaw =  boost::str(boost::format("%.2f") % (torso_orientation.at(2))); boost::replace_all(bodyyaw,",",".");
+    string bodyx =  boost::str(boost::format("%.2f") % (torso.Xpos)); boost::replace_all(bodyx,",",".");
+    string bodyy =  boost::str(boost::format("%.2f") % (torso.Ypos)); boost::replace_all(bodyy,",",".");
+    string bodyz =  boost::str(boost::format("%.2f") % (torso.Zpos)); boost::replace_all(bodyz,",",".");
+    string bodyxsize =  boost::str(boost::format("%.2f") % (torso.Xsize/2)); boost::replace_all(bodyxsize,",",".");
+    string bodyysize =  boost::str(boost::format("%.2f") % (torso.Ysize/2)); boost::replace_all(bodyysize,",",".");
+    string bodyzsize =  boost::str(boost::format("%.2f") % (torso.Zsize/2)); boost::replace_all(bodyzsize,",",".");
+    string bodyroll =  boost::str(boost::format("%.2f") % (torso.Roll)); boost::replace_all(bodyroll,",",".");
+    string bodypitch =  boost::str(boost::format("%.2f") % (torso.Pitch)); boost::replace_all(bodypitch,",",".");
+    string bodyyaw =  boost::str(boost::format("%.2f") % (torso.Yaw)); boost::replace_all(bodyyaw,",",".");
 
     stream << to_string(number)+string(" ")+
                        bodyx+string(" ")+

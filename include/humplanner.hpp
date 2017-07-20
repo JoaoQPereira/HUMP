@@ -204,40 +204,16 @@ public:
     void getLeftMaxLimits(vector<double> &max_ll);
 
     /**
-     * @brief setTorsoSize
-     * @param tsize
+     * @brief setTorso
+     * @param htorso
      */
-    void setTorsoSize(vector<double>& tsize);
+    void setTorso(HumanoidPart& htorso);
 
     /**
-     * @brief getTorsoSize
-     * @param tsize
+     * @brief getTorso
+     * @return
      */
-    void getTorsoSize(vector<double>& tsize);
-
-    /**
-     * @brief setTorsoPosition
-     * @param tpos
-     */
-    void setTorsoPosition(vector<double>& tpos);
-
-    /**
-     * @brief getTorsoPosition
-     * @param tpos
-     */
-    void getTorsoPosition(vector<double>& tpos);
-
-    /**
-     * @brief setTorsoOrientation
-     * @param tor
-     */
-    void setTorsoOrientation(vector<double>& tor);
-
-    /**
-     * @brief getTorsoOrientation
-     * @param tor
-     */
-    void getTorsoOrientation(vector<double>& tor);
+    HumanoidPart getTorso();
 
     /**
      * @brief setDH_rightArm
@@ -277,13 +253,13 @@ public:
      * @brief setHead
      * @param hhead
      */
-    void setHead(BodyPart& hhead);
+    void setHead(HumanoidPart& hhead);
 
     /**
      * @brief getHead
      * @return
      */
-    BodyPart getHead();
+    HumanoidPart getHead();
 
     /**
      * @brief setHumanHand
@@ -352,13 +328,11 @@ private:
     Matrix4d matLeftHand; /**< trabsformation matrix from the last joint of the left arm and the palm of the left hand (positions are in [mm]) */
     std::vector<double> minLeftLimits; /**< minimum left limits */
     std::vector<double> maxLeftLimits; /**< maximum left limits */
-    std::vector<double> torso_size; /**< size of the torso: xsize, ysize, zsize */
-    std::vector<double> torso_pos; /**< position of the torso: xpos, ypos, zpos */
-    std::vector<double> torso_or; /**< orientation of the torso: xor, yor, zor */
     DHparameters DH_rightArm; /**< current D-H parameters of the right arm */
     DHparameters DH_leftArm; /**< current D-H parameters of the left arm */
     BarrettHand bhand; /**< parameters of the barrett hand */
-    BodyPart head; /**< parameters of the robot' head */
+    HumanoidPart head; /**< parameters of the robot' head */
+    HumanoidPart torso; /**< parameters of the robot' torso*/
     HumanHand hhand; /**< parameters of the human hand */
 
     /**
