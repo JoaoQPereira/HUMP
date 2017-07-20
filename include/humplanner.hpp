@@ -207,13 +207,13 @@ public:
      * @brief setTorso
      * @param htorso
      */
-    void setTorso(HumanoidPart& htorso);
+    void setTorso(RobotPart& htorso);
 
     /**
      * @brief getTorso
      * @return
      */
-    HumanoidPart getTorso();
+    RobotPart getTorso();
 
     /**
      * @brief setDH_rightArm
@@ -253,13 +253,13 @@ public:
      * @brief setHead
      * @param hhead
      */
-    void setHead(HumanoidPart& hhead);
+    void setHead(RobotPart& hhead);
 
     /**
      * @brief getHead
      * @return
      */
-    HumanoidPart getHead();
+    RobotPart getHead();
 
     /**
      * @brief setHumanHand
@@ -315,11 +315,11 @@ private:
     string name;/**< name of the planner */
     // scenario info
     vector<objectPtr> obstacles; /**< obstacles in the scenario */
-    // humanoid info
-    std::vector<double> shPose; /**< pose of the shoulder of the humanoid: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw */
-    std::vector<double> elPose; /**< pose of the elbow of the humanoid: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw  */
-    std::vector<double> wrPose; /**< pose of the wrist of the humanoid: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw  */
-    std::vector<double> haPose; /**< pose of the hand of the humanoid: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw  */
+    // Robot info
+    std::vector<double> shPose; /**< pose of the shoulder of the Robot: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw */
+    std::vector<double> elPose; /**< pose of the elbow of the Robot: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw  */
+    std::vector<double> wrPose; /**< pose of the wrist of the Robot: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw  */
+    std::vector<double> haPose; /**< pose of the hand of the Robot: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw  */
     Matrix4d matWorldToRightArm; /**< transformation matrix from the fixed world frame and the reference frame of the right arm (positions are in [mm]) */
     Matrix4d matRightHand;/**< trabsformation matrix from the last joint of the right arm and the palm of the right hand (positions are in [mm]) */
     std::vector<double> minRightLimits; /**< minimum right limits */
@@ -331,8 +331,8 @@ private:
     DHparameters DH_rightArm; /**< current D-H parameters of the right arm */
     DHparameters DH_leftArm; /**< current D-H parameters of the left arm */
     BarrettHand bhand; /**< parameters of the barrett hand */
-    HumanoidPart head; /**< parameters of the robot' head */
-    HumanoidPart torso; /**< parameters of the robot' torso*/
+    RobotPart head; /**< parameters of the robot' head */
+    RobotPart torso; /**< parameters of the robot' torso*/
     HumanHand hhand; /**< parameters of the human hand */
 
     /**
@@ -556,7 +556,7 @@ private:
 
 
     /**
-     * @brief This method writes down the D-H parameters of the arms of the humanoid robot
+     * @brief This method writes down the D-H parameters of the arms of the robot
      * @param dh
      * @param stream
      * @param k

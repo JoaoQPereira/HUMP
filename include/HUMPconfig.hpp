@@ -113,7 +113,7 @@ typedef struct{
     double Xsize; /**< size of the part along the x axis in [mm] */
     double Ysize; /**< size of the part along the y axis in [mm] */
     double Zsize; /**< size of the part along the z axis in [mm] */
-} HumanoidPart;
+} RobotPart;
 
 /** this struct defines a human thumb */
 typedef struct{

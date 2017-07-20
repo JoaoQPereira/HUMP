@@ -13,7 +13,7 @@ HUMPlanner::HUMPlanner(string name = string ("Default Planner"))
     // planner settings
     this->name = name;
 
-    // humanoid settings
+    // robot settings
     this->matWorldToRightArm = Matrix4d::Identity(4,4);
     this->matWorldToLeftArm = Matrix4d::Identity(4,4);
     this->matRightHand = Matrix4d::Identity(4,4);
@@ -34,7 +34,7 @@ HUMPlanner::HUMPlanner(const HUMPlanner &hp)
     // planner settings
     this->name=hp.name;
 
-    //humanoid settings
+    //robot settings
     this->matWorldToRightArm = hp.matWorldToRightArm;
     this->matWorldToLeftArm = hp.matWorldToLeftArm;
     this->matRightHand = hp.matRightHand;
@@ -266,12 +266,12 @@ void HUMPlanner::getLeftMaxLimits(vector<double> &max_ll)
     }
 }
 
-void HUMPlanner::setTorso(HumanoidPart& htorso)
+void HUMPlanner::setTorso(RobotPart& htorso)
 {
     this->torso = htorso;
 }
 
-HumanoidPart HUMPlanner::getTorso()
+RobotPart HUMPlanner::getTorso()
 {
     return this->torso;
 }
@@ -307,12 +307,12 @@ BarrettHand HUMPlanner::getBarrettHand()
     return this->bhand;
 }
 
-void HUMPlanner::setHead(HumanoidPart& hhead)
+void HUMPlanner::setHead(RobotPart& hhead)
 {
     this->head = hhead;
 }
 
-HumanoidPart HUMPlanner::getHead()
+RobotPart HUMPlanner::getHead()
 {
     return this->head;
 }
@@ -938,7 +938,7 @@ void HUMPlanner::writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obst
 
     if(head_code!=0)
     {
-        HumanoidPart head = this->getHead();
+        RobotPart head = this->getHead();
 
         string headx =  boost::str(boost::format("%.2f") % (head.Ypos)); boost::replace_all(headx,",",".");
         string heady =  boost::str(boost::format("%.2f") % (head.Ypos)); boost::replace_all(heady,",",".");
@@ -966,7 +966,7 @@ void HUMPlanner::writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obst
     }
 
 
-    HumanoidPart torso = this->getTorso();
+    RobotPart torso = this->getTorso();
 
     string bodyx =  boost::str(boost::format("%.2f") % (torso.Xpos)); boost::replace_all(bodyx,",",".");
     string bodyy =  boost::str(boost::format("%.2f") % (torso.Ypos)); boost::replace_all(bodyy,",",".");
