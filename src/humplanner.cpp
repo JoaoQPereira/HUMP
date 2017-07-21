@@ -940,9 +940,9 @@ void HUMPlanner::writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obst
     {
         RobotPart head = this->getHead();
 
-        string headx =  boost::str(boost::format("%.2f") % (head.Ypos)); boost::replace_all(headx,",",".");
+        string headx =  boost::str(boost::format("%.2f") % (head.Xpos)); boost::replace_all(headx,",",".");
         string heady =  boost::str(boost::format("%.2f") % (head.Ypos)); boost::replace_all(heady,",",".");
-        string headz =  boost::str(boost::format("%.2f") % (head.Xpos)); boost::replace_all(headz,",",".");
+        string headz =  boost::str(boost::format("%.2f") % (head.Zpos)); boost::replace_all(headz,",",".");
         string headxsize =  boost::str(boost::format("%.2f") % (head.Xsize/2)); boost::replace_all(headxsize,",",".");
         string headysize =  boost::str(boost::format("%.2f") % (head.Ysize/2)); boost::replace_all(headysize,",",".");
         string headzsize =  boost::str(boost::format("%.2f") % (head.Zsize/2)); boost::replace_all(headzsize,",",".");
