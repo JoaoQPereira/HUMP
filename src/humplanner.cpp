@@ -895,7 +895,7 @@ void HUMPlanner::writeInfoApproachRetreat_place(ofstream &stream, std::vector<do
 }
 
 
-void HUMPlanner::writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obstacles, int head_code)
+void HUMPlanner::writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obstacles, int head_code, RobotPart &torso)
 {
     // Objects (obstacles and body)
     stream << string("# OBJECTS POSITION+RADIUS+ORIENTATION \n");
@@ -938,17 +938,15 @@ void HUMPlanner::writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obst
 
     if(head_code!=0)
     {
-        RobotPart head = this->getHead();
-
-        string headx =  boost::str(boost::format("%.2f") % (head.Xpos)); boost::replace_all(headx,",",".");
-        string heady =  boost::str(boost::format("%.2f") % (head.Ypos)); boost::replace_all(heady,",",".");
-        string headz =  boost::str(boost::format("%.2f") % (head.Zpos)); boost::replace_all(headz,",",".");
-        string headxsize =  boost::str(boost::format("%.2f") % (head.Xsize/2)); boost::replace_all(headxsize,",",".");
-        string headysize =  boost::str(boost::format("%.2f") % (head.Ysize/2)); boost::replace_all(headysize,",",".");
-        string headzsize =  boost::str(boost::format("%.2f") % (head.Zsize/2)); boost::replace_all(headzsize,",",".");
-        string headroll =  boost::str(boost::format("%.2f") % (head.Roll)); boost::replace_all(headroll,",",".");
-        string headpitch =  boost::str(boost::format("%.2f") % (head.Pitch)); boost::replace_all(headpitch,",",".");
-        string headyaw =  boost::str(boost::format("%.2f") % (head.Yaw)); boost::replace_all(headyaw,",",".");
+        string headx =  boost::str(boost::format("%.2f") % (this->head.Xpos)); boost::replace_all(headx,",",".");
+        string heady =  boost::str(boost::format("%.2f") % (this->head.Ypos)); boost::replace_all(heady,",",".");
+        string headz =  boost::str(boost::format("%.2f") % (this->head.Zpos)); boost::replace_all(headz,",",".");
+        string headxsize =  boost::str(boost::format("%.2f") % (this->head.Xsize/2)); boost::replace_all(headxsize,",",".");
+        string headysize =  boost::str(boost::format("%.2f") % (this->head.Ysize/2)); boost::replace_all(headysize,",",".");
+        string headzsize =  boost::str(boost::format("%.2f") % (this->head.Zsize/2)); boost::replace_all(headzsize,",",".");
+        string headroll =  boost::str(boost::format("%.2f") % (this->head.Roll)); boost::replace_all(headroll,",",".");
+        string headpitch =  boost::str(boost::format("%.2f") % (this->head.Pitch)); boost::replace_all(headpitch,",",".");
+        string headyaw =  boost::str(boost::format("%.2f") % (this->head.Yaw)); boost::replace_all(headyaw,",",".");
 
         stream << to_string(number)+string(" ")+
                            headx+string(" ")+
@@ -965,8 +963,6 @@ void HUMPlanner::writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obst
         ++number;
     }
 
-
-    RobotPart torso = this->getTorso();
 
     string bodyx =  boost::str(boost::format("%.2f") % (torso.Xpos)); boost::replace_all(bodyx,",",".");
     string bodyy =  boost::str(boost::format("%.2f") % (torso.Ypos)); boost::replace_all(bodyy,",",".");
@@ -2659,7 +2655,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     }
     if(coll){
         //info objects presents in scenario (body and obstacles)
-        this->writeInfoObjects(PostureDat,obsts, head_code);
+        this->writeInfoObjects(PostureDat, obsts, head_code, this->torso);
         // object that has the target
         switch(mov_type){
         case 0: //pick
@@ -3353,7 +3349,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      }
 
      //info objects presents in scenario (obstacles and body)
-     this->writeInfoObjects(PostureDat,objs, head_code);
+     this->writeInfoObjects(PostureDat, objs, head_code, this->torso);
      // object that has the target
      switch(mov_type){
      case 0: // pick

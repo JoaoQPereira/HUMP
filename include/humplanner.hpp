@@ -660,8 +660,9 @@ private:
      * @param stream
      * @param obstacles
      * @param head_code
+     * @param torso
      */
-    void writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obstacles, int head_code);
+    void writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obstacles, int head_code, RobotPart &torso);
 
     /**
      * @brief writeInfoObjectTarget
