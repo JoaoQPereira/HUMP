@@ -385,7 +385,7 @@ void HUMPlanner::writeArmLimits(ofstream &stream, std::vector<double> &minArmLim
     stream << string("param llim := \n");
 
     for (std::size_t i=0; i < minArmLimits.size(); ++i){
-        string minLim=  boost::str(boost::format("%.2f") % (minArmLimits.at(i)));
+        string minLim=  boost::str(boost::format("%.2f") % (minArmLimits.at(i)+SPACER));
         boost::replace_all(minLim,",",".");
         if (i == minArmLimits.size()-1){
             stream << to_string(i+1)+string(" ")+minLim+string(";\n");
@@ -398,7 +398,7 @@ void HUMPlanner::writeArmLimits(ofstream &stream, std::vector<double> &minArmLim
     stream << string("param ulim := \n");
 
     for (std::size_t i=0; i < maxArmLimits.size(); ++i){
-        string maxLim=  boost::str(boost::format("%.2f") % (maxArmLimits.at(i)));
+        string maxLim=  boost::str(boost::format("%.2f") % (maxArmLimits.at(i)-SPACER));
         boost::replace_all(maxLim,",",".");
 
         if (i == maxArmLimits.size()-1){
@@ -3129,7 +3129,9 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
     // tolerances
     double timestep; MatrixXd traj_no_bound;
     this->directTrajectoryNoBound(steps,initAuxPosture,finalAuxPosture,traj_no_bound);
-    timestep = this->getTimeStep(params,traj_no_bound,2);
+    int mod;
+    if(pre_post==0){mod=0;}else{mod=1;}
+    timestep = this->getTimeStep(params,traj_no_bound,mod);
     double totalTime = timestep*steps;
     std::vector<double> lambda = params.lambda_bounce;
     std::vector<double> tolsArm = params.tolsArm;
@@ -4302,7 +4304,7 @@ bool HUMPlanner::amplRead(string &datFile, string &modFile, string &nlFile)
 //#endif
 }
 
-bool HUMPlanner::optimize(string &nlfile, std::vector<Number> &x, double tol, double acc_tol)
+bool HUMPlanner::optimize(string &nlfile, std::vector<Number> &x, double tol, double acc_tol, double constr_viol_tol)
 {
     // Create a new instance of IpoptApplication
     //  (use a SmartPtr, not raw)
@@ -4313,6 +4315,7 @@ bool HUMPlanner::optimize(string &nlfile, std::vector<Number> &x, double tol, do
 
     app->Options()->SetNumericValue("tol", tol);
     app->Options()->SetNumericValue("acceptable_tol", acc_tol);
+    //app->Options()->SetNumericValue("constr_viol_tol", constr_viol_tol);
     app->Options()->SetStringValue("output_file", "ipopt.out");
     app->Options()->SetStringValue("hessian_approximation", "limited-memory");
     app->Options()->SetIntegerValue("print_level",3);
@@ -4451,7 +4454,6 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
     std::vector<double> maxArmLimits(maxLimits.begin(),maxLimits.begin()+joints_arm);
     std::vector<double> initialGuess(minArmLimits.size(),0.0);
     if ((pre_post==1) && rand_init){ // pre_posture for approaching
-        const double SPACER = 10.0*M_PI/180;
         for(size_t i=0; i < minArmLimits.size();++i){
             initialGuess.at(i)=getRand(minArmLimits.at(i)+SPACER,maxArmLimits.at(i)-SPACER);
         }
@@ -4473,8 +4475,7 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
             std::vector<Number> x_sol;
             try
             {
-                double tol_stop = 1e-2;
-                if (this->optimize(nlfile,x_sol,tol_stop,tol_stop)){
+                if (this->optimize(nlfile,x_sol,FINAL_TOL,FINAL_ACC_TOL,FINAL_CONSTR_VIOL_TOL)){
                     finalPosture = std::vector<double>(x_sol.size());
                     for (std::size_t i=0; i < x_sol.size(); ++i){
                         finalPosture.at(i)=x_sol[i];
@@ -4611,8 +4612,7 @@ bool HUMPlanner::singleArmBouncePosture(int steps,int mov_type,int pre_post,hump
             std::vector<Number> x_sol;
             try
             {
-                double tol_stop = 1e-6;
-                if (this->optimize(nlfile,x_sol,tol_stop,tol_stop)){
+                if (this->optimize(nlfile,x_sol,BOUNCE_TOL,BOUNCE_ACC_TOL,BOUNCE_CONSTR_VIOL_TOL)){
                     size_t size;
                     bouncePosture = std::vector<double>(joints_arm+joints_hand);
                     if(place){
@@ -5080,17 +5080,26 @@ bool HUMPlanner::directTrajectory(int mov_type,int steps,hump_params &tols, std:
             }else{
                init_posture_0 = new_posture_ext;
             }
-            success = this->singleArmFinalPosture(mov_type,pre_post,params,init_posture_0, new_posture);
+            if(i==steps){
+                success=true;
+            }else{
+                success = this->singleArmFinalPosture(mov_type,pre_post,params,init_posture_0, new_posture);
+            }
             if(success){
-                new_posture_ext = new_posture;
-                for(size_t k=new_posture.size();k<finalPosture.size();++k){
-                    double delta_theta_fing = (finalPosture.at(k)-initPosture.at(k))/(steps+1);
-                    new_posture_ext.push_back(init_posture_0.at(k)+delta_theta_fing);
+                if(i!=steps){
+                    new_posture_ext = new_posture;
+                    for(size_t k=new_posture.size();k<finalPosture.size();++k){
+                        double delta_theta_fing = (finalPosture.at(k)-initPosture.at(k))/(steps+1);
+                        new_posture_ext.push_back(init_posture_0.at(k)+delta_theta_fing);
+                    }
                 }
-                for (std::size_t j = 0; j<new_posture_ext.size(); ++j){
+                for (std::size_t j = 0; j<finalPosture.size(); ++j){
                     if(i==0){
                         Traj(i,j) = init_posture_0.at(j);
                         vel_app_ret(i,j) = vel_0.at(j);
+                    }else if(i==steps){
+                        Traj(i,j) = finalPosture.at(j);
+                        vel_app_ret(i,j) = (finalPosture.at(j) - init_posture_0.at(j))/timestep;
                     }else{
                         Traj(i,j) = new_posture_ext.at(j);
                         vel_app_ret(i,j) = (new_posture_ext.at(j) - init_posture_0.at(j))/timestep;
@@ -5103,7 +5112,7 @@ bool HUMPlanner::directTrajectory(int mov_type,int steps,hump_params &tols, std:
             }else{
                 break;
             }
-        }
+        }// for loop
         params.mov_specs.target = init_target;
         params.mov_specs.coll = init_coll;
     }else{
