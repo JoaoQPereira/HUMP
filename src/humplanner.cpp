@@ -1157,7 +1157,7 @@ void HUMPlanner::writeRotMatObjects(ofstream &stream, int objects_size)
 }
 
 
-void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matrix4d &matHand, std::vector<double> &tolsArm, bool final)
+void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matrix4d &matHand, std::vector<double> &tolsArm, vector<double> dh_arm_d, bool final)
 {
     stream << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n");
     stream << string("#  Direct Kinematics model of the arm \n\n");
@@ -1329,44 +1329,20 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
 
 
     if(final){
-//        stream << string("var Shoulder {i in 1..4} = #xyz+radius \n");
-//        stream << string("if ( i<4 ) then 	T_W_2[i,4] \n");
-//        stream << string("else	if ( i=4 ) then  ")+tolArm1+string("\n");
-//        stream << string(";  \n");
-
-//        stream << string("var Elbow {i in 1..4} = #xyz+radius \n");
-//        stream << string("if ( i<4 ) then 	T_W_4[i,4] \n");
-//        stream << string("else	if ( i=4 ) then  ")+tolArm2+string("\n");
-//        stream << string(";  \n");
-
-//        stream << string("var Wrist {i in 1..4} = #xyz+radius \n");
-//        stream << string("if ( i<4 ) then 	T_W_6[i,4] \n");
-//        stream << string("else	if ( i=4 ) then  ")+tolArm3+string("\n");
-//        stream << string(";  \n");
-
-//        stream << string("var Hand {i in 1..4} = #xyz+radius \n");
-//        stream << string("if ( i<4 ) then 	T_W_H[i,4] \n");
-//        stream << string("else	if ( i=4 ) then  ")+tolArm4+string("\n");
-//        stream << string(";  \n");
-
         //Base
-        if(tolsArm.at(0)!=0.00)
+        if(dh_arm_d.at(0)>=D_LENGHT_TOL)
         {
             stream << string("var Base {i in 1..3} = T_WorldToArm[i,4]  \n");
             stream << string("; \n");
         }
 
-        if(tolsArm.at(1)!=0.00)
+        if(dh_arm_d.at(1)!=0.00)
         {
             stream << string("var Point2 {i in 1..4} = #xyz+radius \n");
             stream << string("if ( i<4 ) then 	T_W_1[i,4] \n");
             stream << string("else	if ( i=4 ) then  ")+tolArm2+string("\n");
             stream << string(";  \n");
-        }
 
-        //Shoulder
-        if(tolsArm.at(3)!=0.00)
-        {
             stream << string("var Point4 {i in 1..4} = #xyz+radius \n");
             stream << string("if ( i<4 ) then 	T_W_2[i,4] \n");
             stream << string("else	if ( i=4 ) then  ")+tolArm4+string("\n");
@@ -1378,7 +1354,8 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
             stream << string("; \n");
         }
 
-        if(tolsArm.at(5)!=0.00)
+
+        if(dh_arm_d.at(3)!=0.00)
         {
             stream << string("var Point6 {i in 1..4} = #xyz+radius \n");
             stream << string("if ( i<4 ) then 	T_W_3[i,4] \n");
@@ -1392,7 +1369,7 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
         stream << string("else	if ( i=4 ) then  ")+tolArm8+string("\n");
         stream << string(";  \n");
 
-        if(tolsArm.at(9)!=0.00)
+        if(dh_arm_d.at(5)!=0.00)
         {
             stream << string("var Point10 {i in 1..4} = #xyz+radius \n");
             stream << string("if ( i<4 ) then 	T_W_5[i,4] \n");
@@ -1420,47 +1397,20 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
 
     else
     {
-//        stream << string("var Shoulder {i in 1..4,j in Iterations} = #xyz+radius \n");
-//        stream << string("if ( i<4 ) then 	T_W_1[i,4,j] \n");
-//        stream << string("else	if ( i=4 ) then  ")+tolArm1+string("\n");
-//        stream << string(";  \n");
-
-//        stream << string("var Elbow {i in 1..4,j in Iterations} = #xyz+radius \n");
-//        stream << string("if ( i<4 ) then 	T_W_3[i,4,j] \n");
-//        stream << string("else	if ( i=4 ) then  ")+tolArm2+string("\n");
-//        stream << string(";  \n");
-
-//        stream << string("var Wrist {i in 1..4,j in Iterations} = #xyz+radius \n");
-//        stream << string("if ( i<4 ) then 	T_W_5[i,4,j] \n");
-//        stream << string("else	if ( i=4 ) then  ")+tolArm3+string("\n");
-//        stream << string(";  \n");
-
-//        stream << string("var Hand {i in 1..4,j in Iterations} = #xyz+radius \n");
-//        stream << string("if ( i<4 ) then 	T_W_H[i,4,j] \n");
-//        stream << string("else	if ( i=4 ) then  ")+tolArm4+string("\n");
-//        stream << string(";  \n");
-
-
-
         //Base
-        if(tolsArm.at(0)!=0.00)
+        if(dh_arm_d.at(0)>=D_LENGHT_TOL)
         {
             stream << string("var Base {i in 1..3,j in Iterations} = T_WorldToArm[i,4,j]  \n");
             stream << string(";  \n");
         }
 
-        if(tolsArm.at(1)!=0.00)
+        if(dh_arm_d.at(1)!=0.00)
         {
             stream << string("var Point2 {i in 1..4,j in Iterations} = #xyz+radius \n");
             stream << string("if ( i<4 ) then 	T_W_1[i,4,j] \n");
             stream << string("else	if ( i=4 ) then  ")+tolArm2+string("\n");
             stream << string(";  \n");
-        }
 
-
-        //Shoulder
-        if(tolsArm.at(3)!=0.00)
-        {
             stream << string("var Point4 {i in 1..4,j in Iterations} = #xyz+radius \n");
             stream << string("if ( i<4 ) then 	T_W_2[i,4,j] \n");
             stream << string("else	if ( i=4 ) then  ")+tolArm4+string("\n");
@@ -1473,7 +1423,7 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
         }
 
 
-        if(tolsArm.at(5)!=0.00)
+        if(dh_arm_d.at(3)!=0.00)
         {
             stream << string("var Point6 {i in 1..4,j in Iterations} = #xyz+radius \n");
             stream << string("if ( i<4 ) then 	T_W_3[i,4,j] \n");
@@ -1487,7 +1437,7 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
         stream << string("else	if ( i=4 ) then  ")+tolArm8+string("\n");
         stream << string(";  \n");
 
-        if(tolsArm.at(9)!=0.00)
+        if(dh_arm_d.at(5)!=0.00)
         {
             stream << string("var Point10 {i in 1..4,j in Iterations} = #xyz+radius \n");
             stream << string("if ( i<4 ) then 	T_W_5[i,4,j] \n");
@@ -2732,7 +2682,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     else
        this->writeRotMatObjects(PostureMod, obsts.size()+1);
     // Direct Kinematics of the arm
-    this->writeArmDirKin(PostureMod,matWorldToArm,matHand,tolsArm,true);
+    this->writeArmDirKin(PostureMod,matWorldToArm,matHand,tolsArm,dh_arm.d,true);
 
     switch(hand_code){
     case 0: // human hand
@@ -2747,12 +2697,38 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     // Points of the arm
     //PostureMod << string("var Points_Arm {j in 1..21, i in 1..4} = \n");
 
-    int npoints=9;
-    for(int i=0; i<tolsArm.size(); ++i)
-    {
-        if(tolsArm.at(i)!=0.00)
-            ++npoints;
-    }
+    //Number of arm points
+    int npoints=0;
+
+    if(dh_arm.d.at(1)==0 && dh_arm.d.at(3)==0 && dh_arm.d.at(5)==0)
+        npoints = 6 + 9;
+
+    if((dh_arm.d.at(1)!=0 && dh_arm.d.at(3)==0 && dh_arm.d.at(5)==0) ||
+       (dh_arm.d.at(1)==0 && dh_arm.d.at(3)!=0 && dh_arm.d.at(5)==0) ||
+       (dh_arm.d.at(1)==0 && dh_arm.d.at(3)==0 && dh_arm.d.at(5)!=0))
+        npoints = 8 + 9;
+
+    if((dh_arm.d.at(1)!=0 && dh_arm.d.at(3)!=0 && dh_arm.d.at(5)==0) ||
+       (dh_arm.d.at(1)!=0 && dh_arm.d.at(3)==0 && dh_arm.d.at(5)!=0) ||
+       (dh_arm.d.at(1)==0 && dh_arm.d.at(3)!=0 && dh_arm.d.at(5)!=0) )
+        npoints = 9 + 9;
+
+    if(dh_arm.d.at(1)!=0 && dh_arm.d.at(3)!=0 && dh_arm.d.at(5)!=0)
+        npoints = 10 + 9;
+
+    if(dh_arm.d.at(0)>= D_LENGHT_TOL)
+       ++npoints;
+
+    if(dh_arm.d.at(1)>= D_LENGHT_TOL)
+       ++npoints;
+
+    if(dh_arm.d.at(3)>= D_LENGHT_TOL)
+        ++npoints;
+
+    if(dh_arm.d.at(5)>= D_LENGHT_TOL)
+        ++npoints;
+
+
 
     string tolArm1 =  boost::str(boost::format("%.2f") % tolsArm.at(0)); boost::replace_all(tolArm1,",",".");
     string tolArm3 =  boost::str(boost::format("%.2f") % tolsArm.at(2)); boost::replace_all(tolArm3,",",".");
@@ -2769,14 +2745,14 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     int j=1;
 
 
-    if(tolsArm.at(0)!=0.00 && tolsArm.at(1)==0.00)
+    if(dh_arm.d.at(0)>=D_LENGHT_TOL)
     {
         PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i]+Point4[i])/2 \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
         ++j;
     }
 
-    if(tolsArm.at(0)!=0.00 && tolsArm.at(1)!=0.00)
+    if(dh_arm.d.at(0)>=D_LENGHT_TOL)
     {
         if(j==1)
              PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i]+Point2[i])/2 \n");
@@ -2788,7 +2764,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
         ++j;
     }
 
-    if(tolsArm.at(1)!=0.00)
+    if(dh_arm.d.at(1)!=0)
     {
         if(j==1)
             PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point2[i] \n");
@@ -2797,7 +2773,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
         ++j;
     }
 
-    if(tolsArm.at(2)!=0.00)
+    if(dh_arm.d.at(1)>=D_LENGHT_TOL)
     {
         if(j==1)
             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point2[i]+Point4[i])/2 \n");
@@ -2809,7 +2785,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     }
 
 
-    if(tolsArm.at(3)!=0.00)
+    if(dh_arm.d.at(1)!=0)
     {
         if(j==1)
             PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point4[i] \n");
@@ -2819,7 +2795,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     }
 
 
-    if(tolsArm.at(5)!=0.00)
+    if(dh_arm.d.at(3)!=0)
     {
         if(j==1)
             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i]+Point6[i])/2 \n");
@@ -2844,7 +2820,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     }
 
 
-    if(tolsArm.at(6)!=0.00)
+    if(dh_arm.d.at(3)>=D_LENGHT_TOL)
     {
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point6[i] + Point8[i]/2) \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm7+string("\n");
@@ -2856,7 +2832,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     ++j;
 
 
-    if(tolsArm.at(9)!=0.00)
+    if(dh_arm.d.at(5)!=0)
     {
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i]+Point10[i])/2  \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
@@ -2874,12 +2850,14 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     }
 
 
-    if(tolsArm.at(10)!=0.00)
+    if(dh_arm.d.at(5)>=D_LENGHT_TOL)
     {
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point10[i] + Point11[i])/2 \n");
         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm11+string("\n");
         ++j;
     }
+
+
 
     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point12[i] \n");
     point_arm.push_back(j);
@@ -3462,7 +3440,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
         this->writeRotMatObjects(PostureMod, objs.size()+1);
 
      // Direct Kinematics of the arm
-     this->writeArmDirKin(PostureMod,matWorldToArm,matHand,tolsArm,false);
+     this->writeArmDirKin(PostureMod,matWorldToArm,matHand,tolsArm,dh.d,false);
 
      std::vector<double> obj_tar_size;
      string obj_radius;
@@ -3519,12 +3497,37 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      string tolArm14 =  boost::str(boost::format("%.2f") % tolsArm.at(13)); boost::replace_all(tolArm14,",",".");
 
 
-     int npoints=9;
-     for(int i=0; i<tolsArm.size(); ++i)
-     {
-         if(tolsArm.at(i)!=0.00)
-            ++npoints;
-     }
+     //Number of arm points
+     int npoints=0;
+
+     if(dh.d.at(1)==0 && dh.d.at(3)==0 && dh.d.at(5)==0)
+         npoints = 6 + 9;
+
+     if((dh.d.at(1)!=0 && dh.d.at(3)==0 && dh.d.at(5)==0) ||
+        (dh.d.at(1)==0 && dh.d.at(3)!=0 && dh.d.at(5)==0) ||
+        (dh.d.at(1)==0 && dh.d.at(3)==0 && dh.d.at(5)!=0))
+         npoints = 8 + 9;
+
+     if((dh.d.at(1)!=0 && dh.d.at(3)!=0 && dh.d.at(5)==0) ||
+        (dh.d.at(1)!=0 && dh.d.at(3)==0 && dh.d.at(5)!=0) ||
+        (dh.d.at(1)==0 && dh.d.at(3)!=0 && dh.d.at(5)!=0) )
+         npoints = 9 + 9;
+
+     if(dh.d.at(1)!=0 && dh.d.at(3)!=0 && dh.d.at(5)!=0)
+         npoints = 10 + 9;
+
+     if(dh.d.at(0)>= D_LENGHT_TOL)
+        ++npoints;
+
+     if(dh.d.at(1)>= D_LENGHT_TOL)
+        ++npoints;
+
+     if(dh.d.at(3)>= D_LENGHT_TOL)
+         ++npoints;
+
+     if(dh.d.at(5)>= D_LENGHT_TOL)
+         ++npoints;
+
 
      // Points of the arm
      std::vector<int> point_arm;
@@ -3538,26 +3541,26 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
         PostureMod << string("var Points_Arm {j in 1..")+ to_string(npoints) + string(", i in 1..4,k in Iterations} = \n");
      }
 
-     if(tolsArm.at(0)!=0.00 && tolsArm.at(1)==0.00)
+     if(dh.d.at(0)>=D_LENGHT_TOL)
      {
-        PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point4[i,k])/2 \n");
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
-        ++j;
-     }
-
-
-     if(tolsArm.at(0)!=0.00 && tolsArm.at(1)!=0.00)
-     {
-         if(j==1)
-             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point2[i,k])/2 \n");
-         else
-             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point2[i,k])/2 \n");
+         PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point4[i,k])/2 \n");
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
          ++j;
      }
 
+     if(dh.d.at(0)>=D_LENGHT_TOL)
+     {
+         if(j==1)
+              PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point2[i,k])/2 \n");
 
-     if(tolsArm.at(1)!=0.00)
+         else
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point2[i,k])/2 \n");
+
+         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
+         ++j;
+     }
+
+     if(dh.d.at(1)!=0)
      {
          if(j==1)
              PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point2[i,k] \n");
@@ -3566,19 +3569,19 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
          ++j;
      }
 
-
-     if(tolsArm.at(2)!=0.00)
+     if(dh.d.at(1)>=D_LENGHT_TOL)
      {
          if(j==1)
-             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point2[i,k]+Point4[i,k])/2 \n");
+             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point2[i]+Point4[i])/2 \n");
          else
              PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point2[i,k]+Point4[i,k])/2 \n");
+
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm3+string("\n");
          ++j;
      }
 
 
-     if(tolsArm.at(3)!=0.00)
+     if(dh.d.at(1)!=0)
      {
          if(j==1)
              PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point4[i,k] \n");
@@ -3587,15 +3590,17 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
          ++j;
      }
 
-     if(tolsArm.at(5)!=0.00)
+
+     if(dh.d.at(3)!=0)
      {
          if(j==1)
-            PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point6[i,k])/2 \n");
+             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point6[i,k])/2 \n");
          else
-            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point6[i,k])/2 \n");
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point6[i,k])/2 \n");
 
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
          ++j;
+
          PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point6[i,k] \n");
          point_arm.push_back(j);
          ++j;
@@ -3603,36 +3608,35 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      else
      {
          if(j==1)
-            PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point8[i,k])/2 \n");
+             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point8[i,k])/2 \n");
          else
-            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point8[i,k])/2 \n");
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point8[i,k])/2 \n");
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
          ++j;
      }
 
 
-     if(tolsArm.at(6)!=0.00)
+     if(dh.d.at(3)>=D_LENGHT_TOL)
      {
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point6[i,k] + Point8[i,k]/2) \n");
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm7+string("\n");
          ++j;
      }
 
-
      PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i,k] \n");
      point_arm.push_back(j);
      ++j;
 
 
-     if(tolsArm.at(9)!=0.00)
+     if(dh.d.at(5)!=0)
      {
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i,k]+Point10[i,k])/2  \n");
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
-        ++j;
+         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i,k]+Point10[i,k])/2  \n");
+         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
+         ++j;
 
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point10[i,k] \n");
-        point_arm.push_back(j);
-        ++j;
+         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point10[i,k] \n");
+         point_arm.push_back(j);
+         ++j;
      }
      else
      {
@@ -3642,7 +3646,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      }
 
 
-     if(tolsArm.at(10)!=0.00)
+     if(dh.d.at(5)>=D_LENGHT_TOL)
      {
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point10[i,k] + Point11[i,k])/2 \n");
          PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm11+string("\n");

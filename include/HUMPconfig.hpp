@@ -80,6 +80,8 @@ const double W_RED_MIN = 1; /**< minimum value of angular velocity reduction whe
 
 const bool HAS_JOINT_ACCELEARATION_MAX_LIMIT = true; /**< true to check acceleration maximum limit, false otherwise */
 
+const int D_LENGHT_TOL = 350; /** If length of the link is bigger than 350mm is create a point of arm*/
+
 static bool abs_compare(double a, double b)
 {
     return (std::abs(a) < std::abs(b));

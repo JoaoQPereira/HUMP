@@ -724,9 +724,10 @@ private:
      * @param matWorldToArm
      * @param matHand
      * @param tolsArm
+     * @param dh_arm_d
      * @param final
      */
-    void writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matrix4d &matHand, std::vector<double>& tolsArm, bool final);
+    void writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matrix4d &matHand, std::vector<double>& tolsArm, vector<double> dh_arm_d, bool final);
 
     /**
      * @brief writeObjective
