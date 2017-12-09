@@ -740,12 +740,10 @@ private:
      * @brief writeBodyConstraints
      * @param stream
      * @param final
-     * @param tolsArm
      * @param npoints
-     * @param point_arm
      * @param objects_pos
      */
-    void writeBodyConstraints(ofstream &stream, bool final, std::vector<double> tolsArm, int npoints, std::vector<int> point_arm, int objects_pos);
+    void writeBodyConstraints(ofstream &stream, bool final, int npoints, int objects_pos);
 
     /**
      * @brief RPY_matrix

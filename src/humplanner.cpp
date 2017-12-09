@@ -1342,17 +1342,12 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
             stream << string("if ( i<4 ) then 	T_W_1[i,4] \n");
             stream << string("else	if ( i=4 ) then  ")+tolArm2+string("\n");
             stream << string(";  \n");
+        }
 
-            stream << string("var Point4 {i in 1..4} = #xyz+radius \n");
-            stream << string("if ( i<4 ) then 	T_W_2[i,4] \n");
-            stream << string("else	if ( i=4 ) then  ")+tolArm4+string("\n");
-            stream << string(";  \n");
-        }
-        else
-        {
-            stream << string("var Point4 {i in 1..3} = T_W_2[i,4] \n");
-            stream << string("; \n");
-        }
+        stream << string("var Point4 {i in 1..4} = #xyz+radius \n");
+        stream << string("if ( i<4 ) then 	T_W_2[i,4] \n");
+        stream << string("else	if ( i=4 ) then  ")+tolArm4+string("\n");
+        stream << string(";  \n");
 
 
         if(dh_arm_d.at(3)!=0.00)
@@ -1410,17 +1405,12 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
             stream << string("if ( i<4 ) then 	T_W_1[i,4,j] \n");
             stream << string("else	if ( i=4 ) then  ")+tolArm2+string("\n");
             stream << string(";  \n");
+        }
 
-            stream << string("var Point4 {i in 1..4,j in Iterations} = #xyz+radius \n");
-            stream << string("if ( i<4 ) then 	T_W_2[i,4,j] \n");
-            stream << string("else	if ( i=4 ) then  ")+tolArm4+string("\n");
-            stream << string(";  \n");
-        }
-        else
-        {
-            stream << string("var Point4 {i in 1..3,j in Iterations} = T_W_2[i,4,j] \n");
-            stream << string(";  \n");
-        }
+        stream << string("var Point4 {i in 1..4,j in Iterations} = #xyz+radius \n");
+        stream << string("if ( i<4 ) then 	T_W_2[i,4,j] \n");
+        stream << string("else	if ( i=4 ) then  ")+tolArm4+string("\n");
+        stream << string(";  \n");
 
 
         if(dh_arm_d.at(3)!=0.00)
@@ -2306,32 +2296,12 @@ void HUMPlanner::writeObjective(ofstream &stream, bool final)
 }
 
 
-void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final, std::vector<double> tolsArm, int npoints,
-                                      std::vector<int> point_arm, int objects_pos)
+void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final, int npoints, int objects_pos)
 {
     stream << string("# Constraints with the body: the body is modeled as a supperellipsoide \n");
     if (final)
     {
-        stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(" : ");
-
-        if(tolsArm.at(5)==0 && tolsArm.at(9)==0)
-        {
-            stream << string("j=")+ to_string(point_arm.at(0)) + string(" or j>=") + to_string(point_arm.at(1))
-                      + string("} : \n");
-        }
-
-        if((tolsArm.at(5)!=0 && tolsArm.at(9)==0) || (tolsArm.at(5)==0 && tolsArm.at(9)!=0))
-        {
-            stream << string("j=")+ to_string(point_arm.at(0)) + string(" or j=") + to_string(point_arm.at(1))
-                      + string(" or j>=") + to_string(point_arm.at(2)) + string("} :  \n");
-        }
-
-        if(tolsArm.at(5)!=0 && tolsArm.at(9)!=0)
-        {
-            stream << string("j=")+ to_string(point_arm.at(0)) + string(" or j=") + to_string(point_arm.at(1))
-                      + string(" or j=") + to_string(point_arm.at(2)) + string(" or j>=") + to_string(point_arm.at(3))
-                      + string("} :  \n");
-        }
+        stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(" }: \n ");
 
         stream << string("(((Points_Arm[j,1]-body[1])^2 + (Points_Arm[j,2]-body[2])^2 + (Points_Arm[j,3]-body[3])^2)^(1/2))  \n");
         stream << string("* \n");
@@ -2353,26 +2323,7 @@ void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final, std::vector<
     }
     else
     {
-        stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(", l in Iterations : ");
-
-        if(tolsArm.at(5)==0 && tolsArm.at(9)==0)
-        {
-            stream << string("j=")+ to_string(point_arm.at(0)) + string(" or j>=") + to_string(point_arm.at(1))
-                      + string("} : \n");
-        }
-
-        if((tolsArm.at(5)!=0 && tolsArm.at(9)==0) || (tolsArm.at(5)==0 && tolsArm.at(9)!=0))
-        {
-            stream << string("j=")+ to_string(point_arm.at(0)) + string(" or j=") + to_string(point_arm.at(1))
-                      + string(" or j>=") + to_string(point_arm.at(2)) + string("} :  \n");
-        }
-
-        if(tolsArm.at(5)!=0 && tolsArm.at(9)!=0)
-        {
-            stream << string("j=")+ to_string(point_arm.at(0)) + string(" or j=") + to_string(point_arm.at(1))
-                      + string(" or j=") + to_string(point_arm.at(2)) + string(" or j>=") + to_string(point_arm.at(3))
-                      + string("} :  \n");
-        }
+        stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(", l in Iterations}: \n");
 
         stream << string("(((Points_Arm[j,1,l]-body[1])^2 + (Points_Arm[j,2,l]-body[2])^2 + (Points_Arm[j,3,l]-body[3])^2)^(1/2))  \n");
         stream << string("*  \n");
@@ -2698,36 +2649,76 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     //PostureMod << string("var Points_Arm {j in 1..21, i in 1..4} = \n");
 
     //Number of arm points
-    int npoints=0;
+    int npoints = 0;
+    int npoints_hand = 9;
 
-    if(dh_arm.d.at(1)==0 && dh_arm.d.at(3)==0 && dh_arm.d.at(5)==0)
-        npoints = 6 + 9;
 
-    if((dh_arm.d.at(1)!=0 && dh_arm.d.at(3)==0 && dh_arm.d.at(5)==0) ||
-       (dh_arm.d.at(1)==0 && dh_arm.d.at(3)!=0 && dh_arm.d.at(5)==0) ||
-       (dh_arm.d.at(1)==0 && dh_arm.d.at(3)==0 && dh_arm.d.at(5)!=0))
-        npoints = 8 + 9;
+    //Manipulator with shoulder offset
+    if(dh_arm.d.at(1)!=0)
+    {
+        npoints = npoints + 2;
 
-    if((dh_arm.d.at(1)!=0 && dh_arm.d.at(3)!=0 && dh_arm.d.at(5)==0) ||
-       (dh_arm.d.at(1)!=0 && dh_arm.d.at(3)==0 && dh_arm.d.at(5)!=0) ||
-       (dh_arm.d.at(1)==0 && dh_arm.d.at(3)!=0 && dh_arm.d.at(5)!=0) )
-        npoints = 9 + 9;
+        if(dh_arm.d.at(0)>=D_LENGHT_TOL)
+            npoints++;
 
-    if(dh_arm.d.at(1)!=0 && dh_arm.d.at(3)!=0 && dh_arm.d.at(5)!=0)
-        npoints = 10 + 9;
+        if(dh_arm.d.at(1)>=D_LENGHT_TOL)
+            npoints++;
+    }
+    //Manipulator without shoulder offset
+    else
+    {
+        npoints++;
 
-    if(dh_arm.d.at(0)>= D_LENGHT_TOL)
-       ++npoints;
+        if(dh_arm.d.at(0)>=D_LENGHT_TOL)
+            npoints++;
+    }
 
-    if(dh_arm.d.at(1)>= D_LENGHT_TOL)
-       ++npoints;
 
-    if(dh_arm.d.at(3)>= D_LENGHT_TOL)
-        ++npoints;
 
-    if(dh_arm.d.at(5)>= D_LENGHT_TOL)
-        ++npoints;
+    //Manipulator with elbow offset
+    if(dh_arm.d.at(3)!=0)
+    {
+        npoints = npoints + 2;
 
+        if(dh_arm.d.at(2)>=D_LENGHT_TOL)
+            npoints++;
+
+        if(dh_arm.d.at(3)>=D_LENGHT_TOL)
+            npoints++;
+    }
+    //Manipulator without elbow offset
+    else
+    {
+        npoints++;
+
+        if(dh_arm.d.at(2)>=D_LENGHT_TOL)
+            npoints++;
+    }
+
+
+    //Manipulator with wrist offset
+    if(dh_arm.d.at(5)!=0)
+    {
+        npoints = npoints + 2;
+
+        if(dh_arm.d.at(4)>=D_LENGHT_TOL)
+            npoints++;
+
+        if(dh_arm.d.at(5)>=D_LENGHT_TOL)
+            npoints++;
+    }
+    //Manipulator without wrist offset
+    else
+    {
+        npoints++;
+
+        if(dh_arm.d.at(4)>=D_LENGHT_TOL)
+            npoints++;
+    }
+
+
+    //For all manipulators are created spheres 13 to 23
+    npoints = npoints + 2 + npoints_hand;
 
 
     string tolArm1 =  boost::str(boost::format("%.2f") % tolsArm.at(0)); boost::replace_all(tolArm1,",",".");
@@ -2741,53 +2732,50 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
 
 
     PostureMod << string("var Points_Arm {j in 1..")+ to_string(npoints) + string(", i in 1..4} = #xyz + radius\n");
-    std::vector<int> point_arm;
     int j=1;
 
 
-    if(dh_arm.d.at(0)>=D_LENGHT_TOL)
-    {
-        PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i]+Point4[i])/2 \n");
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
-        ++j;
-    }
-
-    if(dh_arm.d.at(0)>=D_LENGHT_TOL)
-    {
-        if(j==1)
-             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i]+Point2[i])/2 \n");
-
-        else
-            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i]+Point2[i])/2 \n");
-
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
-        ++j;
-    }
-
+    //Manipulator with shoulder offset (Spheres 1, 2, 3 and 4)
     if(dh_arm.d.at(1)!=0)
     {
-        if(j==1)
+        if(dh_arm.d.at(0)>=D_LENGHT_TOL) //Sphere 1
+        {
+            PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i]+Point2[i])/2 \n");
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
+            ++j;
+        }
+
+
+        if(j==1) //Sphere 2
             PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point2[i] \n");
         else
             PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point2[i] \n");
         ++j;
-    }
 
-    if(dh_arm.d.at(1)>=D_LENGHT_TOL)
-    {
-        if(j==1)
-            PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point2[i]+Point4[i])/2 \n");
-        else
+
+        if(dh_arm.d.at(1)>=D_LENGHT_TOL) //Sphere 3
+        {
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point2[i]+Point4[i])/2 \n");
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm3+string("\n");
+            ++j;
+        }
 
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm3+string("\n");
-        ++j;
+
+        //Sphere 4
+        PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point4[i] \n");
+        j++;
     }
-
-
-    if(dh_arm.d.at(1)!=0)
+    //Manipulator without shoulder offset (Spheres 1 and 4)
+    else
     {
-        if(j==1)
+        if(dh_arm.d.at(0)>=D_LENGHT_TOL) //Sphere 1
+        {
+            PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i]+Point4[i])/2 \n");
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
+            ++j;
+        }
+
+        if(j==1)//Sphere 4
             PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point4[i] \n");
         else
             PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point4[i] \n");
@@ -2795,85 +2783,112 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     }
 
 
+
+    //Manipulator with elbow offset (Spheres 5, 6, 7 and 8)
     if(dh_arm.d.at(3)!=0)
     {
-        if(j==1)
-            PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i]+Point6[i])/2 \n");
-        else
+        if(dh_arm.d.at(2)>=D_LENGHT_TOL) //Sphere 5
+        {
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i]+Point6[i])/2 \n");
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
+            ++j;
+        }
 
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
+
+        //Sphere 6
+        PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point6[i] \n");
         ++j;
 
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point6[i] \n");
-        point_arm.push_back(j);
+
+        if(dh_arm.d.at(3)>=D_LENGHT_TOL)//Sphere 7
+        {
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point6[i] + Point8[i]/2) \n");
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm7+string("\n");
+            ++j;
+        }
+
+
+        //Sphere 8
+        PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i] \n");
         ++j;
     }
+    //Manipulator wihout elbow offset (5 and 8)
     else
     {
-        if(j==1)
-            PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i]+Point8[i])/2 \n");
-        else
+        if(dh_arm.d.at(2)>=D_LENGHT_TOL)//Sphere 5
+        {
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i]+Point8[i])/2 \n");
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
+            ++j;
+        }
+
+
+        //Sphere 8
+        PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i] \n");
         ++j;
     }
 
 
-    if(dh_arm.d.at(3)>=D_LENGHT_TOL)
-    {
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point6[i] + Point8[i]/2) \n");
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm7+string("\n");
-        ++j;
-    }
 
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i] \n");
-    point_arm.push_back(j);
-    ++j;
-
-
+    //Manipulator with wrist offset (Spheres 9, 10, 11 and 12)
     if(dh_arm.d.at(5)!=0)
     {
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i]+Point10[i])/2  \n");
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
+        if(dh_arm.d.at(4)>=D_LENGHT_TOL)    //Sphere 9
+        {
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i]+Point10[i])/2  \n");
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
+            ++j;
+        }
+
+
+        //Sphere 10
+        PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point10[i] \n");
         ++j;
 
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point10[i] \n");
-        point_arm.push_back(j);
-        ++j;
+
+        if(dh_arm.d.at(5)>=D_LENGHT_TOL)//Sphere 11
+        {
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point10[i] + Point11[i])/2 \n");
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm11+string("\n");
+            ++j;
+        }
+
+        //Sphere 12
+        PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point12[i] \n");
+        j++;
     }
+    //Manipulator without wrist offset (Spheres 9 and 12)
     else
     {
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i]+Point12[i])/2  \n");
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
-        ++j;
+        //Sphere 9
+        if(dh_arm.d.at(4)>=D_LENGHT_TOL)
+        {
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i]+Point12[i])/2  \n");
+            PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
+            ++j;
+        }
+
+        //Sphere 12
+        PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point12[i] \n");
+        j++;
     }
 
 
-    if(dh_arm.d.at(5)>=D_LENGHT_TOL)
-    {
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point10[i] + Point11[i])/2 \n");
-        PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm11+string("\n");
-        ++j;
-    }
-
-
-
-    PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point12[i] \n");
-    point_arm.push_back(j);
+    //Sphere 13
+    PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      Point12[i]+0.45*(Hand[i]-Point12[i]) \n");
+    PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm13+string("\n");
+    //Sphere 14
     PostureMod << string("else    if ( j=") + to_string(j+1) + string(" && i<4 ) then      Point12[i]+0.45*(Hand[i]-Point12[i]) \n");
-    PostureMod << string("else    if ( j=") + to_string(j+1) + string(" && i=4 ) then      ")+tolArm13+string("\n");
-    PostureMod << string("else    if ( j=") + to_string(j+2) + string(" && i<4 ) then      Point12[i]+0.45*(Hand[i]-Point12[i]) \n");
-    PostureMod << string("else    if ( j=") + to_string(j+2) + string(" && i=4 ) then      ")+tolArm14+string("\n");
-    PostureMod << string("else    if ( j=") + to_string(j+3) + string(" ) then      Finger1_1[i] \n");
-    PostureMod << string("else    if ( j=") + to_string(j+4) + string(" ) then      Finger2_1[i] \n");
-    PostureMod << string("else    if ( j=") + to_string(j+5) + string(" ) then      Finger3_1[i] \n");
-    PostureMod << string("else    if ( j=") + to_string(j+6) + string(" ) then      Finger1_2[i] \n");
-    PostureMod << string("else    if ( j=") + to_string(j+7) + string(" ) then      Finger2_2[i] \n");
-    PostureMod << string("else    if ( j=") + to_string(j+8) + string(" ) then      Finger3_2[i] \n");
-    PostureMod << string("else    if ( j=") + to_string(j+9) + string(" ) then      Finger1_tip[i] \n");
-    PostureMod << string("else    if ( j=") + to_string(j+10) + string(" ) then      Finger2_tip[i] \n");
-    PostureMod << string("else    if ( j=") + to_string(j+11) + string(" ) then      Finger3_tip[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+1) + string(" && i=4 ) then      ")+tolArm14+string("\n");
+    PostureMod << string("else    if ( j=") + to_string(j+2) + string(" ) then      Finger1_1[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+3) + string(" ) then      Finger2_1[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+4) + string(" ) then      Finger3_1[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+5) + string(" ) then      Finger1_2[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+6) + string(" ) then      Finger2_2[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+7) + string(" ) then      Finger3_2[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+8) + string(" ) then      Finger1_tip[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+9) + string(" ) then      Finger2_tip[i] \n");
+    PostureMod << string("else    if ( j=") + to_string(j+10) + string(" ) then      Finger3_tip[i] \n");
     PostureMod << string("; \n\n");
 
 
@@ -3028,9 +3043,9 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     // constraints with the body
     if(coll){
         if(head_code != 0)
-            this->writeBodyConstraints(PostureMod,true, tolsArm, npoints, point_arm, obsts.size()+2);
+            this->writeBodyConstraints(PostureMod,true, npoints, obsts.size()+2);
         else
-            this->writeBodyConstraints(PostureMod,true, tolsArm, npoints, point_arm, obsts.size()+1);
+            this->writeBodyConstraints(PostureMod,true, npoints, obsts.size()+1);
     }
 
     PostureMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n\n\n");
@@ -3498,39 +3513,79 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
 
 
      //Number of arm points
-     int npoints=0;
+     int npoints = 0;
+     int npoints_hand = 9;
 
-     if(dh.d.at(1)==0 && dh.d.at(3)==0 && dh.d.at(5)==0)
-         npoints = 6 + 9;
 
-     if((dh.d.at(1)!=0 && dh.d.at(3)==0 && dh.d.at(5)==0) ||
-        (dh.d.at(1)==0 && dh.d.at(3)!=0 && dh.d.at(5)==0) ||
-        (dh.d.at(1)==0 && dh.d.at(3)==0 && dh.d.at(5)!=0))
-         npoints = 8 + 9;
+     //Manipulator with shoulder offset
+     if(dh.d.at(1)!=0)
+     {
+         npoints = npoints + 2;
 
-     if((dh.d.at(1)!=0 && dh.d.at(3)!=0 && dh.d.at(5)==0) ||
-        (dh.d.at(1)!=0 && dh.d.at(3)==0 && dh.d.at(5)!=0) ||
-        (dh.d.at(1)==0 && dh.d.at(3)!=0 && dh.d.at(5)!=0) )
-         npoints = 9 + 9;
+         if(dh.d.at(0)>=D_LENGHT_TOL)
+             npoints++;
 
-     if(dh.d.at(1)!=0 && dh.d.at(3)!=0 && dh.d.at(5)!=0)
-         npoints = 10 + 9;
+         if(dh.d.at(1)>=D_LENGHT_TOL)
+             npoints++;
+     }
+     //Manipulator without shoulder offset
+     else
+     {
+         npoints++;
 
-     if(dh.d.at(0)>= D_LENGHT_TOL)
-        ++npoints;
+         if(dh.d.at(0)>=D_LENGHT_TOL)
+             npoints++;
+     }
 
-     if(dh.d.at(1)>= D_LENGHT_TOL)
-        ++npoints;
 
-     if(dh.d.at(3)>= D_LENGHT_TOL)
-         ++npoints;
 
-     if(dh.d.at(5)>= D_LENGHT_TOL)
-         ++npoints;
+     //Manipulator with elbow offset
+     if(dh.d.at(3)!=0)
+     {
+         npoints = npoints + 2;
+
+         if(dh.d.at(2)>=D_LENGHT_TOL)
+             npoints++;
+
+         if(dh.d.at(3)>=D_LENGHT_TOL)
+             npoints++;
+     }
+     //Manipulator without elbow offset
+     else
+     {
+         npoints++;
+
+         if(dh.d.at(2)>=D_LENGHT_TOL)
+             npoints++;
+     }
+
+
+     //Manipulator with wrist offset
+     if(dh.d.at(5)!=0)
+     {
+         npoints = npoints + 2;
+
+         if(dh.d.at(4)>=D_LENGHT_TOL)
+             npoints++;
+
+         if(dh.d.at(5)>=D_LENGHT_TOL)
+             npoints++;
+     }
+     //Manipulator without wrist offset
+     else
+     {
+         npoints++;
+
+         if(dh.d.at(4)>=D_LENGHT_TOL)
+             npoints++;
+     }
+
+
+     //For all manipulators are created spheres 13 to 23
+     npoints = npoints + 2 + npoints_hand;
 
 
      // Points of the arm
-     std::vector<int> point_arm;
      int j=1;
      if (place)
      {
@@ -3541,49 +3596,47 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
         PostureMod << string("var Points_Arm {j in 1..")+ to_string(npoints) + string(", i in 1..4,k in Iterations} = \n");
      }
 
-     if(dh.d.at(0)>=D_LENGHT_TOL)
-     {
-         PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point4[i,k])/2 \n");
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
-         ++j;
-     }
-
-     if(dh.d.at(0)>=D_LENGHT_TOL)
-     {
-         if(j==1)
-              PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point2[i,k])/2 \n");
-
-         else
-             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point2[i,k])/2 \n");
-
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
-         ++j;
-     }
-
+     //Manipulator with shoulder offset (Spheres 1, 2, 3 and 4)
      if(dh.d.at(1)!=0)
      {
-         if(j==1)
+         if(dh.d.at(0)>=D_LENGHT_TOL) //Sphere 1
+         {
+             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point2[i,k])/2 \n");
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
+             ++j;
+         }
+
+
+         if(j==1) //Sphere 2
              PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point2[i,k] \n");
          else
              PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point2[i,k] \n");
          ++j;
-     }
 
-     if(dh.d.at(1)>=D_LENGHT_TOL)
-     {
-         if(j==1)
-             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point2[i]+Point4[i])/2 \n");
-         else
+
+         if(dh.d.at(1)>=D_LENGHT_TOL) //Sphere 3
+         {
              PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point2[i,k]+Point4[i,k])/2 \n");
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm3+string("\n");
+             ++j;
+         }
 
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm3+string("\n");
-         ++j;
+
+         //Sphere 4
+         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point4[i,k] \n");
+         j++;
      }
-
-
-     if(dh.d.at(1)!=0)
+     //Manipulator without shoulder offset (Spheres 1 and 4)
+     else
      {
-         if(j==1)
+         if(dh.d.at(0)>=D_LENGHT_TOL) //Sphere 1
+         {
+             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Base[i,k]+Point4[i,k])/2 \n");
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm1+string("\n");
+             ++j;
+         }
+
+         if(j==1)//Sphere 4
              PostureMod << string("if ( j=") + to_string(j) + string(" ) then      Point4[i,k] \n");
          else
              PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point4[i,k] \n");
@@ -3591,91 +3644,119 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      }
 
 
+
+     //Manipulator with elbow offset (Spheres 5, 6, 7 and 8)
      if(dh.d.at(3)!=0)
      {
-         if(j==1)
-             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point6[i,k])/2 \n");
-         else
+         if(dh.d.at(2)>=D_LENGHT_TOL) //Sphere 5
+         {
              PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point6[i,k])/2 \n");
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
+             ++j;
+         }
 
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
+
+         //Sphere 6
+         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point6[i,k] \n");
          ++j;
 
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point6[i,k] \n");
-         point_arm.push_back(j);
+
+         if(dh.d.at(3)>=D_LENGHT_TOL)//Sphere 7
+         {
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point6[i,k] + Point8[i,k]/2) \n");
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm7+string("\n");
+             ++j;
+         }
+
+
+         //Sphere 8
+         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i,k] \n");
          ++j;
      }
+     //Manipulator wihout elbow offset (5 and 8)
      else
      {
-         if(j==1)
-             PostureMod << string("if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point8[i,k])/2 \n");
-         else
+         if(dh.d.at(2)>=D_LENGHT_TOL)//Sphere 5
+         {
              PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point8[i,k])/2 \n");
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
+             ++j;
+         }
+
+
+         //Sphere 8
+         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i,k] \n");
          ++j;
      }
 
 
-     if(dh.d.at(3)>=D_LENGHT_TOL)
-     {
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point6[i,k] + Point8[i,k]/2) \n");
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm7+string("\n");
-         ++j;
-     }
 
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i,k] \n");
-     point_arm.push_back(j);
-     ++j;
-
-
+     //Manipulator with wrist offset (Spheres 9, 10, 11 and 12)
      if(dh.d.at(5)!=0)
      {
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i,k]+Point10[i,k])/2  \n");
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
+         if(dh.d.at(4)>=D_LENGHT_TOL)    //Sphere 9
+         {
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i,k]+Point10[i,k])/2  \n");
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
+             ++j;
+         }
+
+
+         //Sphere 10
+         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point10[i,k] \n");
          ++j;
 
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point10[i,k] \n");
-         point_arm.push_back(j);
-         ++j;
+
+         if(dh.d.at(5)>=D_LENGHT_TOL)//Sphere 11
+         {
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point10[i,k] + Point11[i,k])/2 \n");
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm11+string("\n");
+             ++j;
+         }
+
+         //Sphere 12
+         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point12[i,k] \n");
+         j++;
      }
+     //Manipulator without wrist offset (Spheres 9 and 12)
      else
      {
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i,k]+Point12[i,k])/2  \n");
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
-         ++j;
+         //Sphere 9
+         if(dh.d.at(4)>=D_LENGHT_TOL)
+         {
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point8[i,k]+Point12[i,k])/2  \n");
+             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm9+string("\n");
+             ++j;
+         }
+
+         //Sphere 12
+         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point12[i,k] \n");
+         j++;
      }
 
 
-     if(dh.d.at(5)>=D_LENGHT_TOL)
-     {
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point10[i,k] + Point11[i,k])/2 \n");
-         PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm11+string("\n");
-         ++j;
-     }
-
-     PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point12[i,k] \n");
-     point_arm.push_back(j);
+     //Sphere 13
+     PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      Point12[i,k]+0.45*(Hand[i,k]-Point12[i,k]) \n");
+     PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm13+string("\n");
+     //Sphere 14
      PostureMod << string("else    if ( j=") + to_string(j+1) + string(" && i<4 ) then      Point12[i,k]+0.45*(Hand[i,k]-Point12[i,k]) \n");
-     PostureMod << string("else    if ( j=") + to_string(j+1) + string(" && i=4 ) then      ")+tolArm13+string("\n");
-     PostureMod << string("else    if ( j=") + to_string(j+2) + string(" && i<4 ) then      Point12[i,k]+0.45*(Hand[i,k]-Point12[i,k]) \n");
-     PostureMod << string("else    if ( j=") + to_string(j+2) + string(" && i=4 ) then      ")+tolArm14+string("\n");
-     PostureMod << string("else    if ( j=") + to_string(j+3) + string(" ) then      Finger1_1[i,k] \n");
-     PostureMod << string("else    if ( j=") + to_string(j+4) + string(" ) then      Finger2_1[i,k] \n");
-     PostureMod << string("else    if ( j=") + to_string(j+5) + string(" ) then      Finger3_1[i,k] \n");
-     PostureMod << string("else    if ( j=") + to_string(j+6) + string(" ) then      Finger1_2[i,k] \n");
-     PostureMod << string("else    if ( j=") + to_string(j+7) + string(" ) then      Finger2_2[i,k] \n");
-     PostureMod << string("else    if ( j=") + to_string(j+8) + string(" ) then      Finger3_2[i,k] \n");
-     PostureMod << string("else    if ( j=") + to_string(j+9) + string(" ) then      Finger1_tip[i,k] \n");
-     PostureMod << string("else    if ( j=") + to_string(j+10) + string(" ) then      Finger2_tip[i,k] \n");
-     PostureMod << string("else    if ( j=") + to_string(j+11) + string(" ) then      Finger3_tip[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+1) + string(" && i=4 ) then      ")+tolArm14+string("\n");
+     PostureMod << string("else    if ( j=") + to_string(j+2) + string(" ) then      Finger1_1[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+3) + string(" ) then      Finger2_1[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+4) + string(" ) then      Finger3_1[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+5) + string(" ) then      Finger1_2[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+6) + string(" ) then      Finger2_2[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+7) + string(" ) then      Finger3_2[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+8) + string(" ) then      Finger1_tip[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+9) + string(" ) then      Finger2_tip[i,k] \n");
+     PostureMod << string("else    if ( j=") + to_string(j+10) + string(" ) then      Finger3_tip[i,k] \n");
 
      if (place)
      {
-         PostureMod << string("else    if ( j=") + to_string(j+12) + string(" ) then 	Obj2Transp[i,k] \n");
-         PostureMod << string("else    if ( j=") + to_string(j+13) + string(" ) then 	Obj2Transp_1[i,k] \n");
-         PostureMod << string("else    if ( j=") + to_string(j+14) + string(" ) then 	Obj2Transp_2[i,k] \n");
+         PostureMod << string("else    if ( j=") + to_string(j+11) + string(" ) then 	Obj2Transp[i,k] \n");
+         PostureMod << string("else    if ( j=") + to_string(j+12) + string(" ) then 	Obj2Transp_1[i,k] \n");
+         PostureMod << string("else    if ( j=") + to_string(j+13) + string(" ) then 	Obj2Transp_2[i,k] \n");
      }
-
 
 
      PostureMod << string("; \n\n");
@@ -4195,9 +4276,9 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      }
      // constraints with the body
      if(head_code != 0)
-        this->writeBodyConstraints(PostureMod,false, tolsArm, npoints, point_arm, objs.size()+2);
+        this->writeBodyConstraints(PostureMod,false, npoints, objs.size()+2);
      else
-        this->writeBodyConstraints(PostureMod,false, tolsArm, npoints, point_arm, objs.size()+1);
+        this->writeBodyConstraints(PostureMod,false, npoints, objs.size()+1);
 
      PostureMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n\n\n");
 
