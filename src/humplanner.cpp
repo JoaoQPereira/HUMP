@@ -2301,47 +2301,87 @@ void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final, int npoints,
     stream << string("# Constraints with the body: the body is modeled as a supperellipsoide \n");
     if (final)
     {
+//        stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(" }: \n ");
+
+//        stream << string("(((Points_Arm[j,1]-body[1])^2 + (Points_Arm[j,2]-body[2])^2 + (Points_Arm[j,3]-body[3])^2)^(1/2))  \n");
+//        stream << string("* \n");
+//        stream << string("(1-(((((Rot[1,1,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,1,") << objects_pos <<
+//                  string("]*Points_Arm[j,2] + Rot[3,1,") << objects_pos << string("]*Points_Arm[j,3] \n");
+//        stream << string("- body[1]*Rot[1,1,") << objects_pos << string("] - body[2]*Rot[2,1,") << objects_pos <<
+//                  string("] - body[3]*Rot[3,1,") << objects_pos << string("]) / body[4])^2)  \n");
+//        stream << string("+ \n");
+//        stream << string("(((Rot[1,2,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,2,") << objects_pos <<
+//                  string("]* Points_Arm[j,2] + Rot[3,2,") << objects_pos << string("]*Points_Arm[j,3]   \n");
+//        stream << string("- body[1]*Rot[1,2,") << objects_pos << string("] - body[2]*Rot[2,2,") << objects_pos <<
+//                  string("] - body[3]*Rot[3,2,") << objects_pos << string("]) / body[5])^2))^10  \n");
+//        stream << string("+  \n");
+//        stream << string("(((Rot[1,3,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,3,") << objects_pos <<
+//                  string("]*Points_Arm[j,2] + Rot[3,3,") << objects_pos << string("]*Points_Arm[j,3]   \n");
+//        stream << string("- body[1]*Rot[1,3,") << objects_pos << string("] - body[2]*Rot[2,3,") << objects_pos <<
+//                  string("] - body[3]*Rot[3,3,") << objects_pos << string("]) / body[6])^20))^(-1/20)) \n");
+//        stream << string("- Points_Arm[j,4] >= 0;\n");
+
+
+
+
         stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(" }: \n ");
 
-        stream << string("(((Points_Arm[j,1]-body[1])^2 + (Points_Arm[j,2]-body[2])^2 + (Points_Arm[j,3]-body[3])^2)^(1/2))  \n");
-        stream << string("* \n");
-        stream << string("(1-(((((Rot[1,1,") << objects_pos << string("]*Points_Arm[j,1] + Rot[1,2,") << objects_pos <<
-                  string("]*Points_Arm[j,2] + Rot[1,3,") << objects_pos << string("]*Points_Arm[j,3] \n");
-        stream << string("- body[1]*Rot[1,1,") << objects_pos << string("] - body[2]*Rot[1,2,") << objects_pos <<
-                  string("] - body[3]*Rot[1,3,") << objects_pos << string("]) / body[4])^2)  \n");
+        stream << string("((((((Rot[1,1,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,1,") << objects_pos <<
+                  string("]*Points_Arm[j,2] + Rot[3,1,") << objects_pos << string("]*Points_Arm[j,3] \n");
+        stream << string("- body[1]*Rot[1,1,") << objects_pos << string("] - body[2]*Rot[2,1,") << objects_pos <<
+                  string("] - body[3]*Rot[3,1,") << objects_pos << string("]) / (body[4]+Points_Arm[j,4]))^2)  \n");
         stream << string("+ \n");
-        stream << string("(((Rot[2,1,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,2,") << objects_pos <<
-                  string("]* Points_Arm[j,2] + Rot[2,3,") << objects_pos << string("]*Points_Arm[j,3]   \n");
-        stream << string("- body[1]*Rot[2,1,") << objects_pos << string("] - body[2]*Rot[2,2,") << objects_pos <<
-                  string("] - body[3]*Rot[2,3,") << objects_pos << string("]) / body[5])^2))^10  \n");
+        stream << string("(((Rot[1,2,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,2,") << objects_pos <<
+                  string("]* Points_Arm[j,2] + Rot[3,2,") << objects_pos << string("]*Points_Arm[j,3]   \n");
+        stream << string("- body[1]*Rot[1,2,") << objects_pos << string("] - body[2]*Rot[2,2,") << objects_pos <<
+                  string("] - body[3]*Rot[3,2,") << objects_pos << string("]) / (body[5]+Points_Arm[j,4]))^2))^10  \n");
         stream << string("+  \n");
-        stream << string("(((Rot[3,1,") << objects_pos << string("]*Points_Arm[j,1] + Rot[3,2,") << objects_pos <<
+        stream << string("(((Rot[1,3,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,3,") << objects_pos <<
                   string("]*Points_Arm[j,2] + Rot[3,3,") << objects_pos << string("]*Points_Arm[j,3]   \n");
-        stream << string("- body[1]*Rot[3,1,") << objects_pos << string("] - body[2]*Rot[3,2,") << objects_pos <<
-                  string("] - body[3]*Rot[3,3,") << objects_pos << string("]) / body[6])^20))^(-1/20)) \n");
-        stream << string("- Points_Arm[j,4] >= 0;\n");
+        stream << string("- body[1]*Rot[1,3,") << objects_pos << string("] - body[2]*Rot[2,3,") << objects_pos <<
+                  string("] - body[3]*Rot[3,3,") << objects_pos << string("]) / (body[6]+Points_Arm[j,4]))^20))) \n");
+        stream << string("- 1 >= 0;\n");
     }
     else
     {
+//        stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(", l in Iterations}: \n");
+
+//        stream << string("(((Points_Arm[j,1,l]-body[1])^2 + (Points_Arm[j,2,l]-body[2])^2 + (Points_Arm[j,3,l]-body[3])^2)^(1/2))  \n");
+//        stream << string("*  \n");
+//        stream << string("(1-(((((Rot[1,1,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,1,") << objects_pos <<
+//                  string("]*Points_Arm[j,2,l] + Rot[3,1,") << objects_pos << string("]*Points_Arm[j,3,l] \n");
+//        stream << string("- body[1]*Rot[1,1,") << objects_pos << string("] - body[2]*Rot[2,1,") << objects_pos <<
+//                  string("] - body[3]*Rot[3,1,") << objects_pos << string("]) / body[4])^2)  \n");
+//        stream << string("+  \n");
+//        stream << string("(((Rot[1,2,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,2,") << objects_pos <<
+//                  string("]* Points_Arm[j,2,l] + Rot[3,2,") << objects_pos << string("]*Points_Arm[j,3,l]   \n");
+//        stream << string("- body[1]*Rot[1,2,") << objects_pos << string("] - body[2]*Rot[2,2,") << objects_pos <<
+//                  string("] - body[3]*Rot[3,2,") << objects_pos << string("]) / body[5])^2))^10  \n");
+//        stream << string("+  \n");
+//        stream << string("(((Rot[1,3,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,3,") << objects_pos <<
+//                  string("]*Points_Arm[j,2,l] + Rot[3,3,") << objects_pos << string("]*Points_Arm[j,3,l]  \n");
+//        stream << string("- body[1]*Rot[1,3,") << objects_pos << string("] - body[2]*Rot[2,3,") << objects_pos <<
+//                  string("] - body[3]*Rot[3,3,") << objects_pos << string("]) / body[6])^20))^(-1/20))  \n");
+//        stream << string("- Points_Arm[j,4,l] >= 0;  \n");
+
+
         stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(", l in Iterations}: \n");
 
-        stream << string("(((Points_Arm[j,1,l]-body[1])^2 + (Points_Arm[j,2,l]-body[2])^2 + (Points_Arm[j,3,l]-body[3])^2)^(1/2))  \n");
-        stream << string("*  \n");
-        stream << string("(1-(((((Rot[1,1,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[1,2,") << objects_pos <<
-                  string("]*Points_Arm[j,2,l] + Rot[1,3,") << objects_pos << string("]*Points_Arm[j,3,l] \n");
-        stream << string("- body[1]*Rot[1,1,") << objects_pos << string("] - body[2]*Rot[1,2,") << objects_pos <<
-                  string("] - body[3]*Rot[1,3,") << objects_pos << string("]) / body[4])^2)  \n");
+        stream << string("((((((Rot[1,1,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,1,") << objects_pos <<
+                  string("]*Points_Arm[j,2,l] + Rot[3,1,") << objects_pos << string("]*Points_Arm[j,3,l] \n");
+        stream << string("- body[1]*Rot[1,1,") << objects_pos << string("] - body[2]*Rot[2,1,") << objects_pos <<
+                  string("] - body[3]*Rot[3,1,") << objects_pos << string("]) / (body[4]+Points_Arm[j,4,l]))^2)  \n");
         stream << string("+  \n");
-        stream << string("(((Rot[2,1,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,2,") << objects_pos <<
-                  string("]* Points_Arm[j,2,l] + Rot[2,3,") << objects_pos << string("]*Points_Arm[j,3,l]   \n");
-        stream << string("- body[1]*Rot[2,1,") << objects_pos << string("] - body[2]*Rot[2,2,") << objects_pos <<
-                  string("] - body[3]*Rot[2,3,") << objects_pos << string("]) / body[5])^2))^10  \n");
+        stream << string("(((Rot[1,2,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,2,") << objects_pos <<
+                  string("]* Points_Arm[j,2,l] + Rot[3,2,") << objects_pos << string("]*Points_Arm[j,3,l]   \n");
+        stream << string("- body[1]*Rot[1,2,") << objects_pos << string("] - body[2]*Rot[2,2,") << objects_pos <<
+                  string("] - body[3]*Rot[3,2,") << objects_pos << string("]) / (body[5]+Points_Arm[j,4,l]))^2))^10  \n");
         stream << string("+  \n");
-        stream << string("(((Rot[3,1,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[3,2,") << objects_pos <<
+        stream << string("(((Rot[1,3,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,3,") << objects_pos <<
                   string("]*Points_Arm[j,2,l] + Rot[3,3,") << objects_pos << string("]*Points_Arm[j,3,l]  \n");
-        stream << string("- body[1]*Rot[3,1,") << objects_pos << string("] - body[2]*Rot[3,2,") << objects_pos <<
-                  string("] - body[3]*Rot[3,3,") << objects_pos << string("]) / body[6])^20))^(-1/20))  \n");
-        stream << string("- Points_Arm[j,4,l] >= 0;  \n");
+        stream << string("- body[1]*Rot[1,3,") << objects_pos << string("] - body[2]*Rot[2,3,") << objects_pos <<
+                  string("] - body[3]*Rot[3,3,") << objects_pos << string("]) / (body[6]+Points_Arm[j,4,l]))^20)))  \n");
+        stream << string("- 1 >= 0;  \n");
     }
 }
 
