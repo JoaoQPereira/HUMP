@@ -719,6 +719,12 @@ private:
     void writeRotMatObjects(ofstream &stream, int objects_size);
 
     /**
+     * @brief writeRotMatObjTar
+     * @param stream
+     */
+    void writeRotMatObjTar(ofstream &stream);
+
+    /**
      * @brief writeArmDirKin
      * @param stream
      * @param matWorldToArm
@@ -893,6 +899,24 @@ private:
      */
     int getSteps(std::vector<double>& maxLimits,std::vector<double>& minLimits,std::vector<double>& initPosture,std::vector<double>& finalPosture);
 
+
+    /**
+     * @brief model_spheres
+     * @param stream_dat
+     * @param stream_model
+     * @param obj_tar_size
+     * @param final
+     * @return
+     */
+    int model_spheres(ofstream &stream_dat,ofstream &stream_model,std::vector<double>& obj_tar_size,bool final);
+
+    /**
+     * @brief compare_sizes
+     * @param pair_1
+     * @param pair_2
+     * @return
+     */
+    bool static compare_sizes (std::pair<std::string,double> pair_1, std::pair<std::string,double> pair_2);
 
     //double getAlpha(int arm, std::vector<double> &posture);
 

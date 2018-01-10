@@ -150,9 +150,13 @@ typedef struct{
 typedef struct{
     int arm_code; /**< the code of the arm: 0 = both arms, 1 = right arm, 2 = left arm */
     int hand_code;/**< the code of the hand: 0 = human hand, 1 = barrett hand */
+<<<<<<< HEAD
+    int head_code; /**< the code of the head: 0 = wobot without head, 1 = robot with head */
+    int griptype; /**< the type of the grip */
+=======
     //int griptype; /**< the type of the grip */
-	int head_code; /**< the code of the head: 0 = wobot without head, 1 = robot with head */    
-	string mov_infoline; /**< description of the movement */
+>>>>>>> upstream/master
+    string mov_infoline; /**< description of the movement */
     double dHO;/**< distanche hand-target*/
     std::vector<double> finalHand;/**< final posture of the hand */
     std::vector<double> target;/**< target / location to reach: target(0)=x, target(1)=y, target(2)=z, target(3)=roll, target(4)=pitch, target(6)=yaw,*/
@@ -214,8 +218,6 @@ typedef struct{
     vector<double> time_steps; /**< sequence of each time steps for each trajectory */
     vector<string> trajectory_descriptions;/**< description of the trajectories */
 }planning_result;
-
-
 
 } // namespace HUMotion
 
