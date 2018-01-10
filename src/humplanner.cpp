@@ -1051,10 +1051,10 @@ void HUMPlanner::writePI(ofstream &stream)
 }
 
 
-void HUMPlanner::writeBodyInfoMod(ofstream &stream, int objects_pos)
+void HUMPlanner::writeBodyInfoMod(ofstream &stream, int body_pos)
 {
     stream << string("# Body info \n");
-    stream << string("param body {i in 1..9} := Objects[") << objects_pos << string(",i];; \n");
+    stream << string("param body {i in 1..9} := Objects[") << body_pos << string(",i];; \n");
 }
 
 void HUMPlanner::writeArmDHParamsMod(ofstream &stream)
@@ -2296,92 +2296,107 @@ void HUMPlanner::writeObjective(ofstream &stream, bool final)
 }
 
 
-void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final, int npoints, int objects_pos)
+void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final, int npoints, int body_pos, int nsphere)
 {
     stream << string("# Constraints with the body: the body is modeled as a supperellipsoide \n");
     if (final)
     {
-//        stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(" }: \n ");
+//        stream << string("subject to body_Arm {j in ")+ to_string(nsphere) + string("..") + to_string(npoints) +  string(" }: \n ");
 
 //        stream << string("(((Points_Arm[j,1]-body[1])^2 + (Points_Arm[j,2]-body[2])^2 + (Points_Arm[j,3]-body[3])^2)^(1/2))  \n");
 //        stream << string("* \n");
-//        stream << string("(1-(((((Rot[1,1,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,1,") << objects_pos <<
-//                  string("]*Points_Arm[j,2] + Rot[3,1,") << objects_pos << string("]*Points_Arm[j,3] \n");
-//        stream << string("- body[1]*Rot[1,1,") << objects_pos << string("] - body[2]*Rot[2,1,") << objects_pos <<
-//                  string("] - body[3]*Rot[3,1,") << objects_pos << string("]) / body[4])^2)  \n");
+//        stream << string("(1-(((((Rot[1,1,") << body_pos << string("]*Points_Arm[j,1] + Rot[2,1,") << body_pos <<
+//                  string("]*Points_Arm[j,2] + Rot[3,1,") << body_pos << string("]*Points_Arm[j,3] \n");
+//        stream << string("- body[1]*Rot[1,1,") << body_pos << string("] - body[2]*Rot[2,1,") << body_pos <<
+//                  string("] - body[3]*Rot[3,1,") << body_pos << string("]) / body[4])^2)  \n");
 //        stream << string("+ \n");
-//        stream << string("(((Rot[1,2,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,2,") << objects_pos <<
-//                  string("]* Points_Arm[j,2] + Rot[3,2,") << objects_pos << string("]*Points_Arm[j,3]   \n");
-//        stream << string("- body[1]*Rot[1,2,") << objects_pos << string("] - body[2]*Rot[2,2,") << objects_pos <<
-//                  string("] - body[3]*Rot[3,2,") << objects_pos << string("]) / body[5])^2))^10  \n");
+//        stream << string("(((Rot[1,2,") << body_pos << string("]*Points_Arm[j,1] + Rot[2,2,") << body_pos <<
+//                  string("]* Points_Arm[j,2] + Rot[3,2,") << body_pos << string("]*Points_Arm[j,3]   \n");
+//        stream << string("- body[1]*Rot[1,2,") << body_pos << string("] - body[2]*Rot[2,2,") << body_pos <<
+//                  string("] - body[3]*Rot[3,2,") << body_pos << string("]) / body[5])^2))^10  \n");
 //        stream << string("+  \n");
-//        stream << string("(((Rot[1,3,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,3,") << objects_pos <<
-//                  string("]*Points_Arm[j,2] + Rot[3,3,") << objects_pos << string("]*Points_Arm[j,3]   \n");
-//        stream << string("- body[1]*Rot[1,3,") << objects_pos << string("] - body[2]*Rot[2,3,") << objects_pos <<
-//                  string("] - body[3]*Rot[3,3,") << objects_pos << string("]) / body[6])^20))^(-1/20)) \n");
+//        stream << string("(((Rot[1,3,") << body_pos << string("]*Points_Arm[j,1] + Rot[2,3,") << body_pos <<
+//                  string("]*Points_Arm[j,2] + Rot[3,3,") << body_pos << string("]*Points_Arm[j,3]   \n");
+//        stream << string("- body[1]*Rot[1,3,") << body_pos << string("] - body[2]*Rot[2,3,") << body_pos <<
+//                  string("] - body[3]*Rot[3,3,") << body_pos << string("]) / body[6])^20))^(-1/20)) \n");
 //        stream << string("- Points_Arm[j,4] >= 0;\n");
 
 
+        stream << string("subject to body_Arm {j in ")+ to_string(nsphere) + string("..") + to_string(npoints) +  string("}: \n");
 
+        stream << string("((((Rot[1,1,") << body_pos << string("]*Points_Arm[j,1] + Rot[2,1,") << body_pos <<
+                  string("]*Points_Arm[j,2] + Rot[3,1,") << body_pos << string("]*Points_Arm[j,3] - \n");
 
-        stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(" }: \n ");
+        stream << string("body[1]*Rot[1,1,") << body_pos << string("] - body[2]*Rot[2,1,") << body_pos <<
+                  string("] - body[3]*Rot[3,1,") << body_pos << string("])^(2)) / ((body[4]+Points_Arm[j,4])^(2))  \n");
 
-        stream << string("((((((Rot[1,1,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,1,") << objects_pos <<
-                  string("]*Points_Arm[j,2] + Rot[3,1,") << objects_pos << string("]*Points_Arm[j,3] \n");
-        stream << string("- body[1]*Rot[1,1,") << objects_pos << string("] - body[2]*Rot[2,1,") << objects_pos <<
-                  string("] - body[3]*Rot[3,1,") << objects_pos << string("]) / (body[4]+Points_Arm[j,4]))^2)  \n");
         stream << string("+ \n");
-        stream << string("(((Rot[1,2,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,2,") << objects_pos <<
-                  string("]* Points_Arm[j,2] + Rot[3,2,") << objects_pos << string("]*Points_Arm[j,3]   \n");
-        stream << string("- body[1]*Rot[1,2,") << objects_pos << string("] - body[2]*Rot[2,2,") << objects_pos <<
-                  string("] - body[3]*Rot[3,2,") << objects_pos << string("]) / (body[5]+Points_Arm[j,4]))^2))^10  \n");
+
+        stream << string("((Rot[1,2,") << body_pos << string("]*Points_Arm[j,1] + Rot[2,2,") << body_pos <<
+                  string("]* Points_Arm[j,2] + Rot[3,2,") << body_pos << string("]*Points_Arm[j,3] -   \n");
+
+        stream << string("body[1]*Rot[1,2,") << body_pos << string("] - body[2]*Rot[2,2,") << body_pos <<
+                  string("] - body[3]*Rot[3,2,") << body_pos << string("])^(2)) / ((body[5]+Points_Arm[j,4])^(2)))^(10)  \n");
+
         stream << string("+  \n");
-        stream << string("(((Rot[1,3,") << objects_pos << string("]*Points_Arm[j,1] + Rot[2,3,") << objects_pos <<
-                  string("]*Points_Arm[j,2] + Rot[3,3,") << objects_pos << string("]*Points_Arm[j,3]   \n");
-        stream << string("- body[1]*Rot[1,3,") << objects_pos << string("] - body[2]*Rot[2,3,") << objects_pos <<
-                  string("] - body[3]*Rot[3,3,") << objects_pos << string("]) / (body[6]+Points_Arm[j,4]))^20))) \n");
-        stream << string("- 1 >= 0;\n");
+
+        stream << string("((Rot[1,3,") << body_pos << string("]*Points_Arm[j,1] + Rot[2,3,") << body_pos <<
+                  string("]*Points_Arm[j,2] + Rot[3,3,") << body_pos << string("]*Points_Arm[j,3] -    \n");
+
+        stream << string("body[1]*Rot[1,3,") << body_pos << string("] - body[2]*Rot[2,3,") << body_pos <<
+                  string("] - body[3]*Rot[3,3,") << body_pos << string("])^(20)) / ((body[6]+Points_Arm[j,4])^(20))) \n");
+
+        stream << string("-1 >= 0;\n");
+
+
     }
     else
     {
-//        stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(", l in Iterations}: \n");
+        stream << string("subject to body_Arm {j in ")+ to_string(nsphere) + string("..") + to_string(npoints) + string(", l in 1..Nsteps+1}: \n");
 
 //        stream << string("(((Points_Arm[j,1,l]-body[1])^2 + (Points_Arm[j,2,l]-body[2])^2 + (Points_Arm[j,3,l]-body[3])^2)^(1/2))  \n");
 //        stream << string("*  \n");
-//        stream << string("(1-(((((Rot[1,1,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,1,") << objects_pos <<
-//                  string("]*Points_Arm[j,2,l] + Rot[3,1,") << objects_pos << string("]*Points_Arm[j,3,l] \n");
-//        stream << string("- body[1]*Rot[1,1,") << objects_pos << string("] - body[2]*Rot[2,1,") << objects_pos <<
-//                  string("] - body[3]*Rot[3,1,") << objects_pos << string("]) / body[4])^2)  \n");
+//        stream << string("(1-(((((Rot[1,1,") << body_pos << string("]*Points_Arm[j,1,l] + Rot[2,1,") << body_pos <<
+//                  string("]*Points_Arm[j,2,l] + Rot[3,1,") << body_pos << string("]*Points_Arm[j,3,l] \n");
+//        stream << string("- body[1]*Rot[1,1,") << body_pos << string("] - body[2]*Rot[2,1,") << body_pos <<
+//                  string("] - body[3]*Rot[3,1,") << body_pos << string("]) / body[4])^2)  \n");
 //        stream << string("+  \n");
-//        stream << string("(((Rot[1,2,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,2,") << objects_pos <<
-//                  string("]* Points_Arm[j,2,l] + Rot[3,2,") << objects_pos << string("]*Points_Arm[j,3,l]   \n");
-//        stream << string("- body[1]*Rot[1,2,") << objects_pos << string("] - body[2]*Rot[2,2,") << objects_pos <<
-//                  string("] - body[3]*Rot[3,2,") << objects_pos << string("]) / body[5])^2))^10  \n");
+//        stream << string("(((Rot[1,2,") << body_pos << string("]*Points_Arm[j,1,l] + Rot[2,2,") << body_pos <<
+//                  string("]* Points_Arm[j,2,l] + Rot[3,2,") << body_pos << string("]*Points_Arm[j,3,l]   \n");
+//        stream << string("- body[1]*Rot[1,2,") << body_pos << string("] - body[2]*Rot[2,2,") << body_pos <<
+//                  string("] - body[3]*Rot[3,2,") << body_pos << string("]) / body[5])^2))^10  \n");
 //        stream << string("+  \n");
-//        stream << string("(((Rot[1,3,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,3,") << objects_pos <<
-//                  string("]*Points_Arm[j,2,l] + Rot[3,3,") << objects_pos << string("]*Points_Arm[j,3,l]  \n");
-//        stream << string("- body[1]*Rot[1,3,") << objects_pos << string("] - body[2]*Rot[2,3,") << objects_pos <<
-//                  string("] - body[3]*Rot[3,3,") << objects_pos << string("]) / body[6])^20))^(-1/20))  \n");
+//        stream << string("(((Rot[1,3,") << body_pos << string("]*Points_Arm[j,1,l] + Rot[2,3,") << body_pos <<
+//                  string("]*Points_Arm[j,2,l] + Rot[3,3,") << body_pos << string("]*Points_Arm[j,3,l]  \n");
+//        stream << string("- body[1]*Rot[1,3,") << body_pos << string("] - body[2]*Rot[2,3,") << body_pos <<
+//                  string("] - body[3]*Rot[3,3,") << body_pos << string("]) / body[6])^20))^(-1/20))  \n");
 //        stream << string("- Points_Arm[j,4,l] >= 0;  \n");
 
 
-        stream << string("subject to body_Arm {j in 1..")+ to_string(npoints) + string(", l in Iterations}: \n");
 
-        stream << string("((((((Rot[1,1,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,1,") << objects_pos <<
-                  string("]*Points_Arm[j,2,l] + Rot[3,1,") << objects_pos << string("]*Points_Arm[j,3,l] \n");
-        stream << string("- body[1]*Rot[1,1,") << objects_pos << string("] - body[2]*Rot[2,1,") << objects_pos <<
-                  string("] - body[3]*Rot[3,1,") << objects_pos << string("]) / (body[4]+Points_Arm[j,4,l]))^2)  \n");
+        stream << string("((((Rot[1,1,") << body_pos << string("]*Points_Arm[j,1,l] + Rot[2,1,") << body_pos <<
+                  string("]*Points_Arm[j,2,l] + Rot[3,1,") << body_pos << string("]*Points_Arm[j,3,l] - \n");
+
+        stream << string("body[1]*Rot[1,1,") << body_pos << string("] - body[2]*Rot[2,1,") << body_pos <<
+                  string("] - body[3]*Rot[3,1,") << body_pos << string("])^(2)) / ((body[4]+Points_Arm[j,4,l])^(2))  \n");
+
+        stream << string("+ \n");
+
+        stream << string("((Rot[1,2,") << body_pos << string("]*Points_Arm[j,1,l] + Rot[2,2,") << body_pos <<
+                  string("]* Points_Arm[j,2,l] + Rot[3,2,") << body_pos << string("]*Points_Arm[j,3,l] -   \n");
+
+        stream << string("body[1]*Rot[1,2,") << body_pos << string("] - body[2]*Rot[2,2,") << body_pos <<
+                  string("] - body[3]*Rot[3,2,") << body_pos << string("])^(2)) / ((body[5]+Points_Arm[j,4,l])^(2)))^(10)  \n");
+
         stream << string("+  \n");
-        stream << string("(((Rot[1,2,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,2,") << objects_pos <<
-                  string("]* Points_Arm[j,2,l] + Rot[3,2,") << objects_pos << string("]*Points_Arm[j,3,l]   \n");
-        stream << string("- body[1]*Rot[1,2,") << objects_pos << string("] - body[2]*Rot[2,2,") << objects_pos <<
-                  string("] - body[3]*Rot[3,2,") << objects_pos << string("]) / (body[5]+Points_Arm[j,4,l]))^2))^10  \n");
-        stream << string("+  \n");
-        stream << string("(((Rot[1,3,") << objects_pos << string("]*Points_Arm[j,1,l] + Rot[2,3,") << objects_pos <<
-                  string("]*Points_Arm[j,2,l] + Rot[3,3,") << objects_pos << string("]*Points_Arm[j,3,l]  \n");
-        stream << string("- body[1]*Rot[1,3,") << objects_pos << string("] - body[2]*Rot[2,3,") << objects_pos <<
-                  string("] - body[3]*Rot[3,3,") << objects_pos << string("]) / (body[6]+Points_Arm[j,4,l]))^20)))  \n");
-        stream << string("- 1 >= 0;  \n");
+
+        stream << string("((Rot[1,3,") << body_pos << string("]*Points_Arm[j,1,l] + Rot[2,3,") << body_pos <<
+                  string("]*Points_Arm[j,2,l] + Rot[3,3,") << body_pos << string("]*Points_Arm[j,3,l] -    \n");
+
+        stream << string("body[1]*Rot[1,3,") << body_pos << string("] - body[2]*Rot[2,3,") << body_pos <<
+                  string("] - body[3]*Rot[3,3,") << body_pos << string("])^(20)) / ((body[6]+Points_Arm[j,4,l])^(20))) \n");
+
+        stream << string("-1 >= 0;\n");
     }
 }
 
@@ -2692,6 +2707,11 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     int npoints = 0;
     int npoints_hand = 9;
 
+    //BodyConstraints condition: analyzed points
+    int nsphere = 0;
+    int aux_sphere5 = 0;
+    int aux_sphere8 = 0;
+
 
     //Manipulator with shoulder offset
     if(dh_arm.d.at(1)!=0)
@@ -2831,6 +2851,8 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
         {
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i]+Point6[i])/2 \n");
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
+            //Number of sphere5 - used in body constraints
+            aux_sphere5 = j;
             ++j;
         }
 
@@ -2850,7 +2872,10 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
 
         //Sphere 8
         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i] \n");
+        //Number of sphere8 - used in body constraints
+        aux_sphere8 = j;
         ++j;
+
     }
     //Manipulator wihout elbow offset (5 and 8)
     else
@@ -2859,15 +2884,25 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
         {
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i]+Point8[i])/2 \n");
             PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
+            //Number of sphere5 - used in body constraints
+            aux_sphere5 = j;
             ++j;
         }
 
 
         //Sphere 8
         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i] \n");
+        //Number of sphere8 - used in body constraints
+        aux_sphere8 = j;
         ++j;
     }
 
+
+    //Body Constraints condition
+    if(aux_sphere5!=0)
+        nsphere = aux_sphere5;
+    else
+        nsphere = aux_sphere8;
 
 
     //Manipulator with wrist offset (Spheres 9, 10, 11 and 12)
@@ -2910,7 +2945,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
 
         //Sphere 12
         PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point12[i] \n");
-        j++;
+        ++j;
     }
 
 
@@ -3083,9 +3118,9 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
     // constraints with the body
     if(coll){
         if(head_code != 0)
-            this->writeBodyConstraints(PostureMod,true, npoints, obsts.size()+2);
+            this->writeBodyConstraints(PostureMod,true, npoints, obsts.size()+2, nsphere);
         else
-            this->writeBodyConstraints(PostureMod,true, npoints, obsts.size()+1);
+            this->writeBodyConstraints(PostureMod,true, npoints, obsts.size()+1, nsphere);
     }
 
     PostureMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n\n\n");
@@ -3556,6 +3591,11 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      int npoints = 0;
      int npoints_hand = 9;
 
+     //Body Constraints Condition
+     int nsphere = 0;
+     int aux_sphere5 = 0;
+     int aux_sphere8 = 0;
+
 
      //Manipulator with shoulder offset
      if(dh.d.at(1)!=0)
@@ -3664,7 +3704,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
 
          //Sphere 4
          PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point4[i,k] \n");
-         j++;
+         ++j;
      }
      //Manipulator without shoulder offset (Spheres 1 and 4)
      else
@@ -3692,6 +3732,8 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
          {
              PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point6[i,k])/2 \n");
              PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
+             //Number of sphere5 - used in body constraints
+             aux_sphere5 = j;
              ++j;
          }
 
@@ -3711,6 +3753,8 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
 
          //Sphere 8
          PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i,k] \n");
+         //Number of sphere8 - used in body constraints
+         aux_sphere8 = j;
          ++j;
      }
      //Manipulator wihout elbow offset (5 and 8)
@@ -3721,13 +3765,23 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
              PostureMod << string("else    if ( j=") + to_string(j) + string(" && i<4 ) then      (Point4[i,k]+Point8[i,k])/2 \n");
              PostureMod << string("else    if ( j=") + to_string(j) + string(" && i=4 ) then      ")+tolArm5+string("\n");
              ++j;
+             //Number of sphere5 - used in body constraints
+             aux_sphere5 = j;
          }
 
 
          //Sphere 8
          PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point8[i,k] \n");
          ++j;
+         //Number of sphere8 - used in body constraints
+         aux_sphere8 = j;
      }
+
+
+     if(aux_sphere5!=0)
+         nsphere = aux_sphere5;
+     else
+         nsphere = aux_sphere8;
 
 
 
@@ -3771,7 +3825,7 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
 
          //Sphere 12
          PostureMod << string("else    if ( j=") + to_string(j) + string(" ) then      Point12[i,k] \n");
-         j++;
+         ++j;
      }
 
 
@@ -4316,9 +4370,9 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      }
      // constraints with the body
      if(head_code != 0)
-        this->writeBodyConstraints(PostureMod,false, npoints, objs.size()+2);
+        this->writeBodyConstraints(PostureMod,false, npoints, objs.size()+2, nsphere);
      else
-        this->writeBodyConstraints(PostureMod,false, npoints, objs.size()+1);
+        this->writeBodyConstraints(PostureMod,false, npoints, objs.size()+1, nsphere);
 
      PostureMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n\n\n");
 

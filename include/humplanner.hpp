@@ -680,9 +680,9 @@ private:
     /**
      * @brief writeBodyInfoMod
      * @param stream
-     * @param objects_pos
+     * @param body_pos
      */
-    void writeBodyInfoMod(ofstream &stream, int objects_pos);
+    void writeBodyInfoMod(ofstream &stream, int body_pos);
 
     /**
      * @brief writeArmDHParamsMod
@@ -741,9 +741,10 @@ private:
      * @param stream
      * @param final
      * @param npoints
-     * @param objects_pos
+     * @param body_pos
+     * @param nsphere
      */
-    void writeBodyConstraints(ofstream &stream, bool final, int npoints, int objects_pos);
+    void writeBodyConstraints(ofstream &stream, bool final, int npoints, int body_pos, int nsphere);
 
     /**
      * @brief RPY_matrix
