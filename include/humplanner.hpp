@@ -750,7 +750,7 @@ private:
      * @param body_pos
      * @param nsphere
      */
-    void writeBodyConstraints(ofstream &stream, bool final, int npoints, int body_pos, int nsphere);
+    void writeBodyConstraints(ofstream &stream, bool final, int npoints, int body_pos, std::vector<int> nsphere);
 
     /**
      * @brief RPY_matrix
