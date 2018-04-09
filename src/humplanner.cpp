@@ -29,7 +29,6 @@ HUMPlanner::HUMPlanner(string name = string ("Default Planner"))
 }
 
 
-
 HUMPlanner::HUMPlanner(const HUMPlanner &hp)
 {
     // planner settings
@@ -61,25 +60,30 @@ HUMPlanner::HUMPlanner(const HUMPlanner &hp)
     //if(hp.obj_tar!=NULL){this->obj_tar=objectPtr(new Object(*(hp.obj_tar.get())));}
 }
 
+
 HUMPlanner::~HUMPlanner()
 {
 
 }
+
 
 void HUMPlanner::setName(string name)
 {
     this->name = name;
 }
 
+
 string HUMPlanner::getName()
 {
     return this->name;
 }
 
+
 void HUMPlanner::addObstacle(objectPtr obs)
 {
     this->obstacles.push_back(objectPtr(new Object(*obs.get())));
 }
+
 
 bool HUMPlanner::setObstacle(objectPtr obs, unsigned pos)
 {
@@ -90,6 +94,7 @@ bool HUMPlanner::setObstacle(objectPtr obs, unsigned pos)
         return false;
     }
 }
+
 
 bool HUMPlanner::getObstacles(std::vector<objectPtr> &obs)
 {
@@ -103,6 +108,7 @@ bool HUMPlanner::getObstacles(std::vector<objectPtr> &obs)
     }
 }
 
+
 objectPtr HUMPlanner::getObstacle(unsigned pos)
 {
     if(this->obstacles.size() > pos){
@@ -113,6 +119,7 @@ objectPtr HUMPlanner::getObstacle(unsigned pos)
         return NULL;
     }
 }
+
 
 objectPtr HUMPlanner::getObstacle(std::string name)
 {
@@ -128,11 +135,13 @@ objectPtr HUMPlanner::getObstacle(std::string name)
     return obj;
 }
 
+
 void HUMPlanner::clearScenario()
 {
     this->obstacles.clear();
     //this->obj_tar = NULL;
 }
+
 
 void HUMPlanner::setMatRightArm(Matrix4d &m)
 {
@@ -143,6 +152,7 @@ void HUMPlanner::setMatRightArm(Matrix4d &m)
     }
 }
 
+
 void HUMPlanner::getMatRightArm(Matrix4d &m)
 {
     for (unsigned i = 0; i < m.rows(); ++ i){
@@ -151,6 +161,7 @@ void HUMPlanner::getMatRightArm(Matrix4d &m)
         }
     }
 }
+
 
 void HUMPlanner::setMatLeftArm(Matrix4d &m)
 {
@@ -161,6 +172,7 @@ void HUMPlanner::setMatLeftArm(Matrix4d &m)
     }
 }
 
+
 void HUMPlanner::getMatLeftArm(Matrix4d &m)
 {
     for (unsigned i = 0; i < m.rows(); ++ i){
@@ -169,6 +181,7 @@ void HUMPlanner::getMatLeftArm(Matrix4d &m)
         }
     }
 }
+
 
 void HUMPlanner::setMatRightHand(Matrix4d &m)
 {
@@ -179,6 +192,7 @@ void HUMPlanner::setMatRightHand(Matrix4d &m)
     }
 }
 
+
 void HUMPlanner::getMatRightHand(Matrix4d &m)
 {
     for (unsigned i = 0; i < m.rows(); ++ i){
@@ -187,6 +201,7 @@ void HUMPlanner::getMatRightHand(Matrix4d &m)
         }
     }
 }
+
 
 void HUMPlanner::setMatLeftHand(Matrix4d &m)
 {
@@ -197,6 +212,7 @@ void HUMPlanner::setMatLeftHand(Matrix4d &m)
     }
 }
 
+
 void HUMPlanner::getMatLeftHand(Matrix4d &m)
 {
     for (unsigned i = 0; i < m.rows(); ++ i){
@@ -206,12 +222,14 @@ void HUMPlanner::getMatLeftHand(Matrix4d &m)
     }
 }
 
+
 void HUMPlanner::setRightMinLimits(vector<double> &min_rl)
 {
     if(!min_rl.empty()){
         std::copy(min_rl.begin(),min_rl.end(),this->minRightLimits.begin());
     }
 }
+
 
 void HUMPlanner::getRightMinLimits(vector<double> &min_rl)
 {
@@ -221,12 +239,14 @@ void HUMPlanner::getRightMinLimits(vector<double> &min_rl)
    }
 }
 
+
 void HUMPlanner::setRightMaxLimits(vector<double> &max_rl)
 {
     if(!max_rl.empty()){
         std::copy(max_rl.begin(),max_rl.end(),this->maxRightLimits.begin());
     }
 }
+
 
 void HUMPlanner::getRightMaxLimits(vector<double> &max_rl)
 {
@@ -236,12 +256,14 @@ void HUMPlanner::getRightMaxLimits(vector<double> &max_rl)
     }
 }
 
+
 void HUMPlanner::setLeftMinLimits(vector<double> &min_ll)
 {
     if(!min_ll.empty()){
         std::copy(min_ll.begin(),min_ll.end(),this->minLeftLimits.begin());
     }
 }
+
 
 void HUMPlanner::getLeftMinLimits(vector<double> &min_ll)
 {
@@ -250,6 +272,7 @@ void HUMPlanner::getLeftMinLimits(vector<double> &min_ll)
      std::copy(this->minLeftLimits.begin(),this->minLeftLimits.end(),min_ll.begin());
     }
 }
+
 
 void HUMPlanner::setLeftMaxLimits(vector<double> &max_ll)
 {
@@ -267,15 +290,18 @@ void HUMPlanner::getLeftMaxLimits(vector<double> &max_ll)
     }
 }
 
+
 void HUMPlanner::setTorso(RobotPart& htorso)
 {
     this->torso = htorso;
 }
 
+
 RobotPart HUMPlanner::getTorso()
 {
     return this->torso;
 }
+
 
 void HUMPlanner::setDH_rightArm(DHparameters &p)
 {
@@ -288,30 +314,36 @@ DHparameters HUMPlanner::getDH_rightArm()
     return this->DH_rightArm;
 }
 
+
 void HUMPlanner::setDH_leftArm(DHparameters &p)
 {
     this->DH_leftArm = p;
 }
+
 
 DHparameters HUMPlanner::getDH_leftArm()
 {
     return this->DH_leftArm;
 }
 
+
 void HUMPlanner::setBarrettHand(BarrettHand &bhand)
 {
     this->bhand = bhand;
 }
+
 
 BarrettHand HUMPlanner::getBarrettHand()
 {
     return this->bhand;
 }
 
+
 void HUMPlanner::setHead(RobotPart& hhead)
 {
     this->head = hhead;
 }
+
 
 RobotPart HUMPlanner::getHead()
 {
@@ -323,6 +355,7 @@ void HUMPlanner::setHumanHand(HumanHand &hhand)
 {
     this->hhand = hhand;
 }
+
 
 HumanHand HUMPlanner::getHumanHand()
 {
@@ -369,6 +402,7 @@ void HUMPlanner::writeArmDHParams(DHparameters dh, ofstream &stream, int k)
     }
 }
 
+
 void HUMPlanner::write_dHO(std::ofstream& stream, double dHO)
 {
 
@@ -377,6 +411,7 @@ void HUMPlanner::write_dHO(std::ofstream& stream, double dHO)
     stream << string("# DISTANCE HAND - TARGET\n");
     stream << string("param dFH := ")+dHOstr+string(";\n");
 }
+
 
 void HUMPlanner::writeArmLimits(ofstream &stream, std::vector<double> &minArmLimits, std::vector<double> &maxArmLimits)
 {
@@ -408,8 +443,8 @@ void HUMPlanner::writeArmLimits(ofstream &stream, std::vector<double> &minArmLim
             stream << to_string(i+1)+string(" ")+maxLim+string("\n");
         }
     }
-
 }
+
 
 void HUMPlanner::writeArmInitPose(ofstream &stream, std::vector<double> &initArmPosture)
 {
@@ -426,8 +461,8 @@ void HUMPlanner::writeArmInitPose(ofstream &stream, std::vector<double> &initArm
             stream << to_string(i+1)+string(" ")+initArmstr+string("\n");
         }
     }
-
 }
+
 
 void HUMPlanner::writeFingerFinalPose(ofstream &stream, std::vector<double> &finalHand)
 {
@@ -444,8 +479,8 @@ void HUMPlanner::writeFingerFinalPose(ofstream &stream, std::vector<double> &fin
             stream << to_string(i+1)+string(" ")+finalHandstr+string("\n");
         }
     }
-
 }
+
 
 void HUMPlanner::writeLambda(ofstream &stream, std::vector<double> &lambda)
 {
@@ -463,6 +498,7 @@ void HUMPlanner::writeLambda(ofstream &stream, std::vector<double> &lambda)
         }
     }
 }
+
 
 void HUMPlanner::writeHumanHandParams(HumanHand& hhand, std::ofstream& stream, int k)
 {
@@ -635,6 +671,7 @@ void HUMPlanner::writeHumanHandParams(HumanHand& hhand, std::ofstream& stream, i
     stream << theta0_thumb_str+string(";\n");
 }
 
+
 void HUMPlanner::writeHumanHandParamsMod(ofstream &stream)
 {
     stream << string("# Parameters of the Hand \n");
@@ -665,13 +702,11 @@ void HUMPlanner::writeHumanHandParamsMod(ofstream &stream)
     stream << string("param a_thumb {i in 1..")+to_string(n_phalange+2)+string("} ; \n");
     stream << string("param d_thumb {i in 1..")+to_string(n_phalange+2)+string("} ; \n");
     stream << string("param theta0_thumb; \n");
-
 }
+
 
 void HUMPlanner::writeBarrettHandParams(BarrettHand& bhand, std::ofstream& stream)
 {
-
-
     // rk and jk parameters
     stream << string("# R and J parameters \n");
     stream << string("param rk := \n");
@@ -727,8 +762,8 @@ void HUMPlanner::writeBarrettHandParams(BarrettHand& bhand, std::ofstream& strea
     string phi3str =  boost::str(boost::format("%.2f") % (bhand.phi3));
     boost::replace_all(phi3str,",",".");
     stream << string("param phi_3 :=")+phi3str+string(";\n");
-
 }
+
 
 void HUMPlanner::writeBarrettHandParamsMod(ofstream &stream)
 {
@@ -742,6 +777,7 @@ void HUMPlanner::writeBarrettHandParamsMod(ofstream &stream)
     stream << string("param phi_2; \n");
     stream << string("param phi_3; \n");
 }
+
 
 void HUMPlanner::writeInfoTarget(ofstream &stream, std::vector<double> tar)
 {
@@ -805,7 +841,6 @@ void HUMPlanner::writeInfoTarget(ofstream &stream, std::vector<double> tar)
     string tarzt2 =  boost::str(boost::format("%.2f") % (zt[2]));
     boost::replace_all(tarzt2,",",".");
     stream << to_string(3)+string(" ")+tarzt2+string(";\n");
-
 }
 
 
@@ -837,8 +872,8 @@ void HUMPlanner::writeInfoApproachRetreat(ofstream &stream, std::vector<double> 
     string tarxt2 =  boost::str(boost::format("%.2f") % (vv(2)));
     boost::replace_all(tarxt2,",",".");
     stream << to_string(3)+string(" ")+tarxt2+string(";\n");
-
 }
+
 
 void HUMPlanner::writeInfoApproachRetreat_place(ofstream &stream, std::vector<double> tar, std::vector<double> approach, std::vector<double> retreat)
 {
@@ -890,9 +925,6 @@ void HUMPlanner::writeInfoApproachRetreat_place(ofstream &stream, std::vector<do
     string tarxt2_ret =  boost::str(boost::format("%.2f") % (vv_ret(2)));
     boost::replace_all(tarxt2_ret,",",".");
     stream << to_string(3)+string(" ")+tarxt2_ret+string(";\n");
-
-
-
 }
 
 
@@ -960,7 +992,6 @@ void HUMPlanner::writeInfoObjects(ofstream &stream, std::vector<objectPtr> &obst
                            headpitch+string(" ")+
                            headyaw+string(" ")+
                            string(" #Head \n");
-
         ++number;
     }
 
@@ -1046,6 +1077,7 @@ void HUMPlanner::writeInfoObjectTarget(ofstream &stream, objectPtr obj)
     stream << string(" param n_ObjTar := ")+to_string(1)+string(";\n");
 }
 
+
 void HUMPlanner::writePI(ofstream &stream)
 {
     stream << string("param pi := 4*atan(1); \n");
@@ -1058,6 +1090,7 @@ void HUMPlanner::writeBodyInfoMod(ofstream &stream, int body_pos)
     stream << string("param body {i in 1..9} := Objects[") << body_pos << string(",i];; \n");
 }
 
+
 void HUMPlanner::writeArmDHParamsMod(ofstream &stream)
 {
     stream << string("# D-H parameters of the arm \n");
@@ -1066,11 +1099,13 @@ void HUMPlanner::writeArmDHParamsMod(ofstream &stream)
     stream << string("param d {i in 1..")+to_string(joints_arm)+string("} ; \n");
 }
 
+
 void HUMPlanner::write_dHOMod(ofstream &stream)
 {
     stream << string("# Distance hand - target  \n");
     stream << string("param dFH; \n");
 }
+
 
 void HUMPlanner::writeInfoObjectsMod(ofstream &stream,bool vec, int nobjects)
 {
@@ -1158,6 +1193,7 @@ void HUMPlanner::writeRotMatObjects(ofstream &stream, int objects_size)
     stream << string("   ; \n");
 }
 
+
 void HUMPlanner::writeRotMatObjTar(ofstream &stream)
 {
     stream << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n");
@@ -1188,7 +1224,6 @@ void HUMPlanner::writeRotMatObjTar(ofstream &stream)
 
 
 void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matrix4d &matHand, std::vector<double>& tolsArm, vector<double> dh_arm_d, bool final)
-
 {
     stream << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n");
     stream << string("#  Direct Kinematics model of the arm \n\n");
@@ -1359,13 +1394,14 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
 
 
     if(final){
-        //Base
+        //Sphere on base
         if(dh_arm_d.at(0)>=D_LENGHT_TOL)
         {
             stream << string("var Base {i in 1..3} = T_WorldToArm[i,4]  \n");
             stream << string("; \n");
         }
 
+        //Sphere on shoulder offset
         if(dh_arm_d.at(1)!=0.00)
         {
             stream << string("var Point2 {i in 1..4} = #xyz+radius \n");
@@ -1374,12 +1410,13 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
             stream << string(";  \n");
         }
 
+        //Sphere on shoulder
         stream << string("var Point4 {i in 1..4} = #xyz+radius \n");
         stream << string("if ( i<4 ) then 	T_W_2[i,4] \n");
         stream << string("else	if ( i=4 ) then  ")+tolArm4+string("\n");
         stream << string(";  \n");
 
-
+        //Sphere on elbow offset
         if(dh_arm_d.at(3)!=0.00)
         {
             stream << string("var Point6 {i in 1..4} = #xyz+radius \n");
@@ -1388,12 +1425,13 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
             stream << string(";  \n");
         }
 
-        //Elbow
+        //Sphere on elbow
         stream << string("var Point8 {i in 1..4} = #xyz+radius \n");
         stream << string("if ( i<4 ) then 	T_W_4[i,4] \n");
         stream << string("else	if ( i=4 ) then  ")+tolArm8+string("\n");
         stream << string(";  \n");
 
+        //Sphere on wrist offset
         if(dh_arm_d.at(5)!=0.00)
         {
             stream << string("var Point10 {i in 1..4} = #xyz+radius \n");
@@ -1402,13 +1440,13 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
             stream << string(";  \n");
         }
 
-        //Wrist
+        //Sphere on wrist
         stream << string("var Point12 {i in 1..4} = #xyz+radius \n");
         stream << string("if ( i<4 ) then 	T_W_6[i,4] \n");
         stream << string("else	if ( i=4 ) then  ")+tolArm12+string("\n");
         stream << string(";  \n");
 
-        //Hand
+        //Sphere on hand
         stream << string("var Hand {i in 1..3} = T_W_H[i,4]  \n");
         stream << string(";  \n \n");
         stream << string("# Hand orientation \n");
@@ -1420,13 +1458,14 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
     }
     else
     {
-        //Base
+        //Sphere on base
         if(dh_arm_d.at(0)>=D_LENGHT_TOL)
         {
             stream << string("var Base {i in 1..3,j in Iterations} = T_WorldToArm[i,4,j]  \n");
             stream << string(";  \n");
         }
 
+        //Sphere on shoulder offset
         if(dh_arm_d.at(1)!=0.00)
         {
             stream << string("var Point2 {i in 1..4,j in Iterations} = #xyz+radius \n");
@@ -1435,12 +1474,13 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
             stream << string(";  \n");
         }
 
+        //Sphere on shoulder
         stream << string("var Point4 {i in 1..4,j in Iterations} = #xyz+radius \n");
         stream << string("if ( i<4 ) then 	T_W_2[i,4,j] \n");
         stream << string("else	if ( i=4 ) then  ")+tolArm4+string("\n");
         stream << string(";  \n");
 
-
+        //Sphere on elbow offset
         if(dh_arm_d.at(3)!=0.00)
         {
             stream << string("var Point6 {i in 1..4,j in Iterations} = #xyz+radius \n");
@@ -1449,12 +1489,13 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
             stream << string(";  \n");
         }
 
-        //Elbow
+        //Sphere on elbow
         stream << string("var Point8 {i in 1..4,j in Iterations} = #xyz+radius \n");
         stream << string("if ( i<4 ) then 	T_W_4[i,4,j] \n");
         stream << string("else	if ( i=4 ) then  ")+tolArm8+string("\n");
         stream << string(";  \n");
 
+        //Sphere on wrist offset
         if(dh_arm_d.at(5)!=0.00)
         {
             stream << string("var Point10 {i in 1..4,j in Iterations} = #xyz+radius \n");
@@ -1463,16 +1504,15 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
             stream << string(";  \n");
         }
 
-        //Wrist
+        //Sphere on wrist
         stream << string("var Point12 {i in 1..4,j in Iterations} = #xyz+radius \n");
         stream << string("if ( i<4 ) then 	T_W_6[i,4,j] \n");
         stream << string("else	if ( i=4 ) then  ")+tolArm12+string("\n");
         stream << string(";  \n");
 
-
+        //Sphere on hand
         stream << string("var Hand {i in 1..3, j in Iterations} = T_W_H[i,4,j]  \n");
         stream << string(";  \n \n");
-
         stream << string("# Hand orientation \n");
         stream << string("var x_H {i in 1..3,j in Iterations} = T_W_H [i,1,j]; \n");
         stream << string("var y_H {i in 1..3,j in Iterations} = T_W_H [i,2,j]; \n");
@@ -1480,6 +1520,7 @@ void HUMPlanner::writeArmDirKin(ofstream &stream, Matrix4d &matWorldToArm, Matri
         stream << string("var Rot_H {j in 1..3,k in 1..3,i in Iterations} = T_W_H [j,k,i]; \n");
     }
 }
+
 
 void HUMPlanner::writeHumanHandDirKin(ofstream &stream, MatrixXd &tolsHand, bool final, bool transport)
 {
@@ -1671,7 +1712,6 @@ void HUMPlanner::writeHumanHandDirKin(ofstream &stream, MatrixXd &tolsHand, bool
         stream << string("var Finger1_1   {i1 in 1..4,i in Iterations} =  if i1<4 then F1_1[i1,4,i] 	else ")+tolHand2+string("; \n");
         stream << string("var Finger1_2   {i1 in 1..4,i in Iterations} =  if i1<4 then F1_2[i1,4,i] 	else ")+tolHand3+string("; \n");
         stream << string("var Finger1_tip {i1 in 1..4,i in Iterations} =  if i1<4 then F1_tip[i1,4,i] else ")+tolHand4+string("; \n\n");
-
     }
 
     stream << string("# Ring finger \n\n");
@@ -2074,10 +2114,9 @@ void HUMPlanner::writeHumanHandDirKin(ofstream &stream, MatrixXd &tolsHand, bool
         stream << string("var Finger3_2   {i1 in 1..4, i in Iterations} =  if i1<4 then F3_2[i1,4,i] 	else ")+tolHand2+string("; \n");
         stream << string("var Finger3_3   {i1 in 1..4, i in Iterations} =  if i1<4 then F3_3[i1,4,i] 	else ")+tolHand3+string("; \n");
         stream << string("var Finger3_tip {i1 in 1..4, i in Iterations} =  if i1<4 then F3_tip[i1,4,i] else ")+tolHand4+string("; \n\n");
-
     }
-
 }
+
 
 void HUMPlanner::writeBarrettHandDirKin(ofstream &stream, MatrixXd &tolsHand, bool final, bool place)
 {
@@ -2218,10 +2257,7 @@ void HUMPlanner::writeBarrettHandDirKin(ofstream &stream, MatrixXd &tolsHand, bo
                  stream << string("var Finger")+to_string(i+1)+string("_1   {i1 in 1..4,i in Iterations} =  if i1<4 then F")+to_string(i+1)+string("_1[i1,4,i] 	else ")+tolHand2+string("; \n");
                  stream << string("var Finger")+to_string(i+1)+string("_2   {i1 in 1..4,i in Iterations} =  if i1<4 then F")+to_string(i+1)+string("_2[i1,4,i] 	else ")+tolHand3+string("; \n");
                  stream << string("var Finger")+to_string(i+1)+string("_tip {i1 in 1..4,i in Iterations} =  if i1<4 then F")+to_string(i+1)+string("_tip[i1,4,i] else ")+tolHand4+string("; \n\n");
-
                // }
-
-
             }
 
         }else{
@@ -2294,18 +2330,12 @@ void HUMPlanner::writeBarrettHandDirKin(ofstream &stream, MatrixXd &tolsHand, bo
                  stream << string("var Finger")+to_string(i+1)+string("_1   {i1 in 1..4,i in Iterations} =  if i1<4 then F")+to_string(i+1)+string("_1[i1,4,i] 	else ")+tolHand2+string("; \n");
                  stream << string("var Finger")+to_string(i+1)+string("_2   {i1 in 1..4,i in Iterations} =  if i1<4 then F")+to_string(i+1)+string("_2[i1,4,i] 	else ")+tolHand3+string("; \n");
                  stream << string("var Finger")+to_string(i+1)+string("_tip {i1 in 1..4,i in Iterations} =  if i1<4 then F")+to_string(i+1)+string("_tip[i1,4,i] else ")+tolHand4+string("; \n\n");
-
                // }
-
-
             }
-
         }
-
-
     }
-
 }
+
 
 void HUMPlanner::writeObjective(ofstream &stream, bool final)
 {
@@ -2328,6 +2358,10 @@ void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final, int npoints,
     if (final)
     {
         stream << string("subject to body_Arm {j in 1..") + to_string(npoints) +  string(" }:\n");
+
+        stream << string("if (((j > ") + to_string(nsphere.at(0))+ string(") and (j < ") + to_string(nsphere.at(1)) +
+                  string(")) or (j > ") + to_string(nsphere.at(2)) +string(")) then\n");
+
 
         stream << string("abs(sum{i in 1..3} (Points_Arm[j,i] - body[i])^2)\n");
 
@@ -2361,7 +2395,10 @@ void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final, int npoints,
     else
     {
 
-        stream << string("subject to body_Arm {j in 1..") + to_string(npoints) +  string(", l in 1..Nsteps+1}:\n");
+        stream << string("subject to body_Arm {j in 1..") + to_string(npoints) +  string(", l in Iterations}:\n");
+
+        stream << string("if (((j > ") + to_string(nsphere.at(0))+ string(") and (j < ") + to_string(nsphere.at(1)) +
+                  string(")) or (j > ") + to_string(nsphere.at(2)) +string(")) then\n");
 
         stream << string("abs(sum{i in 1..3} (Points_Arm[j,i,l] - body[i])^2)\n");
 
@@ -2394,6 +2431,7 @@ void HUMPlanner::writeBodyConstraints(ofstream &stream, bool final, int npoints,
     }
 }
 
+
 void HUMPlanner::RPY_matrix(std::vector<double> rpy, Matrix3d &Rot)
 {
     Rot = Matrix3d::Zero();
@@ -2408,9 +2446,9 @@ void HUMPlanner::RPY_matrix(std::vector<double> rpy, Matrix3d &Rot)
         Rot(0,0) = cos(roll)*cos(pitch);  Rot(0,1) = cos(roll)*sin(pitch)*sin(yaw)-sin(roll)*cos(yaw); Rot(0,2) = sin(roll)*sin(yaw)+cos(roll)*sin(pitch)*cos(yaw);
         Rot(1,0) = sin(roll)*cos(pitch);  Rot(1,1) = cos(roll)*cos(yaw)+sin(roll)*sin(pitch)*sin(yaw); Rot(1,2) = sin(roll)*sin(pitch)*cos(yaw)-cos(roll)*sin(yaw);
         Rot(2,0) = -sin(pitch);           Rot(2,1) = cos(pitch)*sin(yaw);                              Rot(2,2) = cos(pitch)*cos(yaw);
-
     }
 }
+
 
 void HUMPlanner::getRotAxis(vector<double> &xt, int id, std::vector<double> rpy)
 {
@@ -2424,6 +2462,7 @@ void HUMPlanner::getRotAxis(vector<double> &xt, int id, std::vector<double> rpy)
     xt.push_back(v(2)); // z
 }
 
+
 double HUMPlanner::getRand(double min, double max)
 {
     sleep(1);
@@ -2431,6 +2470,7 @@ double HUMPlanner::getRand(double min, double max)
     double f = (double)std::rand() / RAND_MAX;
     return min + f * (max - min);
 }
+
 
 void HUMPlanner::Trans_matrix(std::vector<double> xyz, std::vector<double> rpy, Matrix4d &Trans)
 {
@@ -2443,8 +2483,8 @@ void HUMPlanner::Trans_matrix(std::vector<double> xyz, std::vector<double> rpy, 
     Trans(1,0) = Rot(1,0); Trans(1,1) = Rot(1,1); Trans(1,2) = Rot(1,2); Trans(1,3) = xyz.at(1);
     Trans(2,0) = Rot(2,0); Trans(2,1) = Rot(2,1); Trans(2,2) = Rot(2,2); Trans(2,3) = xyz.at(2);
     Trans(3,0) = 0;        Trans(3,1) = 0;        Trans(3,2) = 0;        Trans(3,3) = 1;
-
 }
+
 
 bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pre_post, std::vector<double> initArmPosture, std::vector<double> initialGuess,std::vector<objectPtr> obsts)
 {
@@ -3017,7 +3057,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
 
 
     PostureMod << string("# Hand orientation\n");
-    PostureMod << string("subject to constr_hand_orient: (sum{i in 1..3} (x_H[i] - x_t[i])^2 + sum{i in 1..3} (z_H[i] - z_t[i])^2 )<= ")+taror+string("; #  x_H = x_t and z_H = x_t \n");
+    PostureMod << string("subject to constr_hand_orient: (sum{i in 1..3} (x_H[i] - x_t[i])^2 + sum{i in 1..3} (z_H[i] - z_t[i])^2 )<= ")+taror+string("; #  x_H = x_t and z_H = z_t \n");
     /*
     switch (mov_type){
     case 0: //pick
@@ -3127,7 +3167,6 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
         PostureMod << string("-1 >=0; \n");
         PostureMod << string("# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \n");
         PostureMod << string("#  \n");
-
     }
 
     // constraints with the body
@@ -3158,9 +3197,7 @@ bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pr
 
 
     return true;
-
 }
-
 
 
 bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_type, int pre_post,std::vector<double> minAuxLimits, std::vector<double> maxAuxLimits,std::vector<double> initAuxPosture, std::vector<double> finalAuxPosture,
@@ -4399,8 +4436,8 @@ bool HUMPlanner::writeFilesBouncePosture(int steps,hump_params& params,int mov_t
      optionsrun.close();
 
      return true;
-
 }
+
 
 int HUMPlanner::model_spheres(ofstream &stream_dat, ofstream &stream_model, std::vector<double>& obj_tar_size,bool final)
 {
@@ -4678,6 +4715,7 @@ int HUMPlanner::model_spheres(ofstream &stream_dat, ofstream &stream_model, std:
     return n_s;
 }
 
+
 bool HUMPlanner::compare_sizes (std::pair<std::string,double> pair_1, std::pair<std::string,double> pair_2)
 {
     return (pair_1.second < pair_2.second);
@@ -4730,9 +4768,7 @@ void HUMPlanner::getObstaclesSingleArm(std::vector<double> center, double radius
             // the object is a real obstacle
             obsts.push_back(obj);
         }
-
     }
-
 }
 
 /*
@@ -4748,6 +4784,7 @@ std::string HUMPlanner::exec(const char* cmd) {
     return result;
 }
 */
+
 
 bool HUMPlanner::amplRead(string &datFile, string &modFile, string &nlFile)
 {
@@ -4769,6 +4806,7 @@ bool HUMPlanner::amplRead(string &datFile, string &modFile, string &nlFile)
 //    return (status);
 //#endif
 }
+
 
 bool HUMPlanner::optimize(string &nlfile, std::vector<Number> &x, double tol, double acc_tol, double constr_viol_tol)
 {
@@ -4845,13 +4883,11 @@ bool HUMPlanner::optimize(string &nlfile, std::vector<Number> &x, double tol, do
         x=x_sol;
 
         return false;
-
     }
 }
 
 
 bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& params, std::vector<double> initPosture, std::vector<double>& finalPosture)
-
 {
     // movement settings
     int arm_code = params.mov_specs.arm_code;
@@ -4991,8 +5027,6 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
 
 bool HUMPlanner::singleArmBouncePosture(int steps,int mov_type,int pre_post,hump_params& params,std::vector<double> initPosture,std::vector<double> finalPosture,std::vector<double>& bouncePosture)
 {
-
-
     std::vector<double> minLimits;
     std::vector<double> maxLimits;
     DHparameters dh;
@@ -5160,8 +5194,6 @@ bool HUMPlanner::singleArmBouncePosture(int steps,int mov_type,int pre_post,hump
             }catch(const std::exception &exc){throw string(exc.what());}
         }else{throw string("Error in writing the files for optimization");}
     }else{throw string("Error in writing the files for optimization");}
-
-
 }
 
 
@@ -5267,9 +5299,7 @@ void HUMPlanner::getDerivative(std::vector<double> &function, std::vector<double
        }else{
            derFunction.push_back((double)(  3*f0 - 16*f1 + 36*f2 - 48*f3 + 25*f4)/(12*h*step_value));
        }
-
 }
-
 
 
 double HUMPlanner::getTimeStep(hump_params &tols, MatrixXd &jointTraj,int mod)
@@ -5362,13 +5392,12 @@ double HUMPlanner::getTimeStep(hump_params &tols, MatrixXd &jointTraj,int mod)
             }
         }
     }
-
     return timestep;
 }
 
+
 bool HUMPlanner::setBoundaryConditions(int mov_type,hump_params &params, int steps, std::vector<double> &initPosture, std::vector<double> &finalPosture, int mod)
 {
-
     MatrixXd fakeTraj; bool success = true;
     std::vector<double> acc_0; std::vector<double> acc_f;
     std::vector<double> vel_0; std::vector<double> vel_f;
@@ -5491,8 +5520,6 @@ bool HUMPlanner::setBoundaryConditions(int mov_type,hump_params &params, int ste
         params.vel_approach = vel_0;
         break;
     }
-
-
     return success;
 }
 
@@ -5629,15 +5656,12 @@ bool HUMPlanner::directTrajectory(int mov_type,int steps,hump_params &tols, std:
             }
         }
     }
-
-
     return success;
-
 }
+
 
 void HUMPlanner::directTrajectoryNoBound(int steps,std::vector<double>& initPosture, std::vector<double>& finalPosture, MatrixXd &Traj)
 {
-
     std::vector<double> tau = std::vector<double>(steps+1); // normalized time
 
     double delta = ((double)1)/steps;
@@ -5656,12 +5680,11 @@ void HUMPlanner::directTrajectoryNoBound(int steps,std::vector<double>& initPost
 
         }
     }
-
 }
+
 
 bool HUMPlanner::directVelocity(int steps,hump_params &tols, std::vector<double> &initPosture, std::vector<double> &finalPosture,double timestep, MatrixXd &Vel, MatrixXd &vel_app_ret,int mod)
 {
-
     std::vector<double> tau = std::vector<double>(steps+1); // normalized time
     std::vector<double> vel_0;
     std::vector<double> vel_f;
@@ -5732,19 +5755,15 @@ bool HUMPlanner::directVelocity(int steps,hump_params &tols, std::vector<double>
                         (1-ret)*vel_f.at(j)*(-12*pow(tau.at(i),2)+28*pow(tau.at(i),3)-15*pow(tau.at(i),4)) + ret*vel_f.at(j)*(2*pow(tau.at(i),3)-pow(tau.at(i),4)) +
                         (1-app)*(1-ret)*0.5*acc_0.at(j)*T*(2*tau.at(i)-9*pow(tau.at(i),2)+12*pow(tau.at(i),3)-5*pow(tau.at(i),4))+
                         (1-app)*(1-ret)*0.5*acc_f.at(j)*T*(3*pow(tau.at(i),2)-8*pow(tau.at(i),3)+5*pow(tau.at(i),4));
-
             }
         }
     }
-
     return success;
-
-
 }
+
 
 bool HUMPlanner::directAcceleration(int steps,hump_params &tols, std::vector<double> &initPosture, std::vector<double> &finalPosture, double timestep, MatrixXd &Acc, MatrixXd &vel_app_ret, int mod)
 {
-
     std::vector<double> tau = std::vector<double>(steps+1); // normalized time
     std::vector<double> vel_0;
     std::vector<double> vel_f;
@@ -5825,22 +5844,18 @@ bool HUMPlanner::directAcceleration(int steps,hump_params &tols, std::vector<dou
                         (1-app)*(1-ret)*12*(vel_f.at(j)/T)*(-2*tau.at(i)+7*pow(tau.at(i),2)-5*pow(tau.at(i),3))+
                         (1-app)*acc_0.at(j)*(1-9*tau.at(i)+18*pow(tau.at(i),2)-10*pow(tau.at(i),3))+ app*acc_0.at(j)*(-pow(tau.at(i),3))+
                         (1-ret)*acc_f.at(j)*(3*tau.at(i)-12*pow(tau.at(i),2)+10*pow(tau.at(i),3))+ret*acc_f.at(j)*(3*pow(tau.at(i),2)-2*pow(tau.at(i),3));
-
             }
         }
     }
-
     return success;
 }
 
+
 void HUMPlanner::backForthTrajectory(int steps, std::vector<double> &initPosture, std::vector<double> &bouncePosture, MatrixXd &Traj)
 {
-
     //int steps = tols.steps;
     //std::vector<double> time = std::vector<double>(steps+1); // time
     std::vector<double> tau = std::vector<double>(steps+1); // normalized time
-
-
 
     double delta = ((double)1)/steps;
 
@@ -5857,6 +5872,7 @@ void HUMPlanner::backForthTrajectory(int steps, std::vector<double> &initPosture
         }
     }
 }
+
 
 void HUMPlanner::backForthVelocity(int steps,hump_params &tols, std::vector<double> &initPosture, std::vector<double> &bouncePosture, double timestep, MatrixXd &Vel)
 {
@@ -5883,12 +5899,12 @@ void HUMPlanner::backForthVelocity(int steps,hump_params &tols, std::vector<doub
     }
 }
 
+
 void HUMPlanner::backForthAcceleration(int steps,hump_params &tols, std::vector<double> &initPosture, std::vector<double> &bouncePosture, double timestep, MatrixXd &Acc)
 {
     //int steps = tols.steps;
     //std::vector<double> time = std::vector<double>(steps+1); // time
     std::vector<double> tau = std::vector<double>(steps+1); // normalized time
-
 
     double T = timestep*steps;
     double delta = ((double)1)/steps;
@@ -5909,6 +5925,7 @@ void HUMPlanner::backForthAcceleration(int steps,hump_params &tols, std::vector<
     }
 }
 
+
 void HUMPlanner::computeMovement(const MatrixXd &direct, const MatrixXd &back, MatrixXd& tot)
 {
     tot = MatrixXd::Constant(direct.rows(),direct.cols(),0);
@@ -5919,6 +5936,7 @@ void HUMPlanner::computeMovement(const MatrixXd &direct, const MatrixXd &back, M
         }
     }
 }
+
 
 double HUMPlanner::getTrajectory(int mov_type,int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj, MatrixXd &vel_app_ret, bool &success,int mod)
 {
@@ -5943,6 +5961,7 @@ double HUMPlanner::getTrajectory(int mov_type,int steps,hump_params &tols, std::
 
     return timestep;
 }
+
 
 double HUMPlanner::getTrajectory(int mov_type,int steps,hump_params &tols,std::vector<double> initPosture,
                                  std::vector<double> finalPosture, std::vector<double> bouncePosture, MatrixXd &traj, MatrixXd &vel_app_ret, bool &success, int mod)
@@ -5974,6 +5993,7 @@ double HUMPlanner::getVelocity(int mov_type,int steps,hump_params &tols, std::ve
 
 }
 
+
 double HUMPlanner::getVelocity(int mov_type,int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture,
                                MatrixXd &traj, MatrixXd &vel,MatrixXd &vel_app_ret,bool &success,int mod)
 {
@@ -5989,8 +6009,8 @@ double HUMPlanner::getVelocity(int mov_type,int steps,hump_params &tols, std::ve
     this->computeMovement(dVel,bVel,vel);
 
     return timestep;
-
 }
+
 
 double HUMPlanner::getAcceleration(int mov_type,int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc, bool &success, int mod)
 {
@@ -6000,8 +6020,8 @@ double HUMPlanner::getAcceleration(int mov_type,int steps,hump_params &tols, std
     this->directAcceleration(steps,tols,initPosture,finalPosture,timestep,acc,vel_app_ret,mod);
 
     return timestep;
-
 }
+
 
 double HUMPlanner::getAcceleration(int mov_type,int steps,hump_params &tols, std::vector<double> initPosture, std::vector<double> finalPosture, std::vector<double> bouncePosture, MatrixXd &traj, MatrixXd &vel, MatrixXd &acc, bool &success, int mod)
 {
@@ -6270,9 +6290,8 @@ planning_result_ptr HUMPlanner::plan_pick(hump_params &params, std::vector<doubl
     }catch( ... ){throw string ("HUMP: error in optimizing the trajecory");}
 
     return res;
-
-
 }
+
 
 planning_result_ptr HUMPlanner::plan_place(hump_params &params, std::vector<double> initPosture)
 {
@@ -6533,6 +6552,7 @@ planning_result_ptr HUMPlanner::plan_place(hump_params &params, std::vector<doub
     return res;
 }
 
+
 planning_result_ptr HUMPlanner::plan_move(hump_params &params, std::vector<double> initPosture)
 {
     planning_result_ptr res;
@@ -6683,6 +6703,7 @@ planning_result_ptr HUMPlanner::plan_move(hump_params &params, std::vector<doubl
     return res;
 }
 
+
 int HUMPlanner::getSteps(std::vector<double> &maxLimits, std::vector<double> &minLimits, std::vector<double> &initPosture, std::vector<double> &finalPosture)
 {
 
@@ -6697,7 +6718,6 @@ int HUMPlanner::getSteps(std::vector<double> &maxLimits, std::vector<double> &mi
     n_steps = static_cast<int>(0.5 + (N_STEP_MIN+(N_STEP_MAX-N_STEP_MIN)*(num/den)));
 
     return n_steps;
-
 }
 
 /*
@@ -7011,12 +7031,14 @@ int HUMPlanner::invKinematics(int arm, std::vector<double> &pose, double alpha, 
 }
 */
 
+
 void HUMPlanner::RotMatrix(double theta, double alpha, Matrix3d &Rot)
 {
     Rot(0,0) = cos(theta);              Rot(0,1) = -sin(theta);              Rot(0,2) = 0.0;
     Rot(1,0) = sin(theta)*cos(alpha);   Rot(1,1) = -cos(theta)*cos(alpha);   Rot(1,2) = -sin(alpha);
     Rot(2,0) = sin(theta)*sin(alpha);   Rot(2,1) = cos(theta)*sin(alpha);    Rot(2,2) = cos(alpha);
 }
+
 
 void HUMPlanner::transfMatrix(double alpha, double a, double d, double theta, Matrix4d &T)
 {
@@ -7026,8 +7048,8 @@ void HUMPlanner::transfMatrix(double alpha, double a, double d, double theta, Ma
     T(1,0) = sin(theta)*cos(alpha); T(1,1) = -cos(theta)*cos(alpha); T(1,2) = -sin(alpha); T(1,3) = -sin(alpha)*d;
     T(2,0) = sin(theta)*sin(alpha); T(2,1) = cos(theta)*sin(alpha);  T(2,2) = cos(alpha);  T(2,3) = cos(alpha)*d;
     T(3,0) = 0.0;                   T(3,1) = 0.0;                    T(3,2) = 0.0;         T(3,3) = 1.0;
-
 }
+
 
 bool HUMPlanner::getRPY(std::vector<double>& rpy, Matrix3d& Rot)
 {
@@ -7052,10 +7074,9 @@ bool HUMPlanner::getRPY(std::vector<double>& rpy, Matrix3d& Rot)
     }
 }
 
+
 void HUMPlanner::directKinematicsSingleArm(int arm, std::vector<double>& posture)
 {
-
-
     Matrix4d T;
     Matrix4d T_aux;
     Matrix4d mat_world;
@@ -7166,12 +7187,10 @@ void HUMPlanner::directKinematicsSingleArm(int arm, std::vector<double>& posture
             this->haPose.push_back(rpy[0]);
             this->haPose.push_back(rpy[1]);
             this->haPose.push_back(rpy[2]);
-
         }
-
     }
-
 }
+
 
 void HUMPlanner::getShoulderPos(int arm, vector<double> &posture, vector<double> &pos)
 {
@@ -7180,12 +7199,14 @@ void HUMPlanner::getShoulderPos(int arm, vector<double> &posture, vector<double>
     pos = { this->shPose.at(0), this->shPose.at(1), this->shPose.at(2)};
 }
 
+
 void HUMPlanner::getShoulderOr(int arm, vector<double> &posture, vector<double> &orient)
 {
     std::vector<double> aux_posture(posture.begin(),posture.begin()+joints_arm);
     this->directKinematicsSingleArm(arm,aux_posture);
     orient = { this->shPose.at(3), this->shPose.at(4), this->shPose.at(5)};
 }
+
 
 void HUMPlanner::getWristPos(int arm, vector<double> &posture, vector<double> &pos)
 {
@@ -7194,12 +7215,14 @@ void HUMPlanner::getWristPos(int arm, vector<double> &posture, vector<double> &p
     pos = { this->wrPose.at(0), this->wrPose.at(1), this->wrPose.at(2)};
 }
 
+
 void HUMPlanner::getWristOr(int arm, vector<double> &posture, vector<double> &orient)
 {
     std::vector<double> aux_posture(posture.begin(),posture.begin()+joints_arm);
     this->directKinematicsSingleArm(arm,aux_posture);
     orient = { this->wrPose.at(3), this->wrPose.at(4), this->wrPose.at(5)};
 }
+
 
 void HUMPlanner::getElbowPos(int arm, vector<double> &posture, vector<double> &pos)
 {
@@ -7208,6 +7231,7 @@ void HUMPlanner::getElbowPos(int arm, vector<double> &posture, vector<double> &p
     pos = { this->elPose.at(0), this->elPose.at(1), this->elPose.at(2)};
 }
 
+
 void HUMPlanner::getElbowOr(int arm, vector<double> &posture, vector<double> &orient)
 {
     std::vector<double> aux_posture(posture.begin(),posture.begin()+joints_arm);
@@ -7215,12 +7239,14 @@ void HUMPlanner::getElbowOr(int arm, vector<double> &posture, vector<double> &or
     orient = { this->elPose.at(3), this->elPose.at(4), this->elPose.at(5)};
 }
 
+
 void HUMPlanner::getHandPos(int arm, vector<double> &posture, vector<double> &pos)
 {
     std::vector<double> aux_posture(posture.begin(),posture.begin()+joints_arm);
     this->directKinematicsSingleArm(arm,aux_posture);
     pos = { this->haPose.at(0), this->haPose.at(1), this->haPose.at(2)};
 }
+
 
 void HUMPlanner::getHandOr(int arm, vector<double> &posture, vector<double> &orient)
 {
