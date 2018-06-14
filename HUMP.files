@@ -1,0 +1,10 @@
+CMakeLists.txt
+config/config.hpp
+config/config.hpp.in
+include/HUMPconfig.hpp
+include/amplinterface.hpp
+include/humplanner.hpp
+include/object.hpp
+src/amplinterface.cpp
+src/humplanner.cpp
+src/object.cpp
