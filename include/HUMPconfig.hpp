@@ -31,15 +31,15 @@
 
 //definition of the macro ASSERT
 #ifndef DEBUG
-    #define ASSERT(x)
+#define ASSERT(x)
 #else
-    #define ASSERT(x) \
-             if (! (x)) \
-            { \
-               cout << "ERROR!! Assert " << #x << " failed\n"; \
-               cout << " on line " << __LINE__  << "\n"; \
-               cout << " in file " << __FILE__ << "\n";  \
-            }
+#define ASSERT(x) \
+    if (! (x)) \
+{ \
+    cout << "ERROR!! Assert " << #x << " failed\n"; \
+    cout << " on line " << __LINE__  << "\n"; \
+    cout << " in file " << __FILE__ << "\n";  \
+    }
 #endif
 
 
@@ -64,15 +64,21 @@ const double BOUNCE_CONSTR_VIOL_TOL = 0.0001; /**< constraints violation toleran
 const double SPACER = 1.0*static_cast<double>(M_PI)/180; /**< degree used to space the joint limits [deg]: IPOPT sometimes does not fully respect all the constraints,
                                                               but the joint limits has to be respected
                                                               This parameter helps to stay within the joint range */
+const double SPACER_PRISMATIC = 0.5; //[mm]
 
 const double PHI = (-log(2.0)/log(TB));/**< parameter to control when the bounce posture is reached */
-const double AP = 20.0*static_cast<double>(M_PI)/180; /**< aperture of the fingers when approaching to pick [rad] */
+const double AP = 20.0 * static_cast<double>(M_PI) / 180; /**< aperture of the fingers when approaching to pick [rad] */
+const double AP_PRISMATIC = 5.0; /**< aperture of the fingers when approaching to pick [mm] */
 
 const double BLANK_PERCENTAGE_TAR = 0.10; /**< percentage of steps to eliminate when either reaching to grasp an object [0,1]*/
 const double BLANK_PERCENTAGE_OBS = 0.20;/**< move at the beginning of a move movement [0,1] */
 
-const int N_STEP_MIN = 5; /**< minimum number of steps */
-const int N_STEP_MAX = 50; /**< maximum number of steps */
+const int N_STEP_MIN = 5; /**< minimum number of steps for revolute joints */
+const int N_STEP_MAX = 50; /**< maximum number of steps for revolute joints */
+const int N_STEP_MIN_PRISMATIC = 5; /**< minimum number of steps for the prismatic joints */
+const int N_STEP_MAX_PRISMATIC = 20; /**< maximum number of steps for the prismatic joints */
+
+const double MU_INIT = 1e-1; /**< initial value of the barrier parameter */
 
 const double W_RED_MIN = 1; /**< minimum value of angular velocity reduction when approaching and retreating */
 //const double W_RED_APP_MAX = 5; /**< maximum value of angular velocity reduction when approaching */
@@ -109,6 +115,14 @@ typedef struct{
     vector<int> jk; /**< j parameters of the barrett hand */
 } BarrettHand;
 
+typedef struct{
+    double maxAperture; /**< [mm] max aperture of the hand in [mm] */
+    double minAperture; /**< [mm] in aperture of the hand in [mm] */
+    double A1; /**< length of the finger in [mm] */
+    double D3; /**< depth of the fingertip in [mm] */
+    vector<int> rk; /**< r parameters of the electric parallel gripper */
+} ElectricGripper;
+
 /** this struct defines a human finger */
 typedef struct{
     double ux; /**<  position of the finger with respect to the center of the palm along the x axis in [mm] */
@@ -116,7 +130,6 @@ typedef struct{
     double uz; /**<  position of the finger with respect to the center of the palm along the z axis in [mm] */
     DHparameters finger_specs; /**< the Denavit-Hartenberg parameters of the finger */
 } HumanFinger;
-
 
 /** this struct defines a generic part of a robot body */
 typedef struct{
@@ -141,18 +154,17 @@ typedef struct{
 
 /** this struct defines a human hand */
 typedef struct{
-  vector<HumanFinger> fingers; /**< fingers of the hand */
-  HumanThumb thumb; /**<  thumb of the hand */
-  double maxAperture; /**< max aperture of the hand in [mm] */
+    vector<HumanFinger> fingers; /**< fingers of the hand */
+    HumanThumb thumb; /**<  thumb of the hand */
+    double maxAperture; /**< max aperture of the hand in [mm] */
 } HumanHand;
 
 /** this struct defines the parameters of the movement */
 typedef struct{
     int arm_code; /**< the code of the arm: 0 = both arms, 1 = right arm, 2 = left arm */
     int hand_code;/**< the code of the hand: 0 = human hand, 1 = barrett hand */
-    //int griptype; /**< the type of the grip */
-	int head_code; /**< the code of the head: 0 = wobot without head, 1 = robot with head */    
-	string mov_infoline; /**< description of the movement */
+    int head_code; /**< the code of the head: 0 = wobot without head, 1 = robot with head */
+    string mov_infoline; /**< description of the movement */
     double dHO;/**< distanche hand-target*/
     std::vector<double> finalHand;/**< final posture of the hand */
     std::vector<double> target;/**< target / location to reach: target(0)=x, target(1)=y, target(2)=z, target(3)=roll, target(4)=pitch, target(6)=yaw,*/

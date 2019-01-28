@@ -19,12 +19,11 @@ typedef boost::shared_ptr<planning_result> planning_result_ptr; /**< pointer to 
 class HUMPlanner
 {
 public:
+
     static unsigned hand_fingers; /**< number of fingers per hand */
     static unsigned joints_arm; /**< number of joints per arm */
     static unsigned joints_hand; /**< number of joints per hand */
     static unsigned n_phalange; /**< number of phalanges per finger */
-
-
     /**
      * @brief HUMPlanner, a constructor
      * @param name
@@ -262,6 +261,18 @@ public:
     RobotPart getHead();
 
     /**
+     * @brief setElectricGripper
+     * @param egripper
+     */
+    void setElectricGripper(ElectricGripper& egripper);
+
+    /**
+     * @brief getElectricGripper
+     * @return
+     */
+    ElectricGripper getElectricGripper();
+
+    /**
      * @brief setHumanHand
      * @param hhand
      */
@@ -334,6 +345,7 @@ private:
     RobotPart head; /**< parameters of the robot' head */
     RobotPart torso; /**< parameters of the robot' torso*/
     HumanHand hhand; /**< parameters of the human hand */
+    ElectricGripper egripper; /**< parameters of the electric parallel gripper */
 
     /**
      * @brief getDerivative
@@ -576,7 +588,7 @@ private:
      * @param minArmLimits
      * @param maxArmLimits
      */
-    void writeArmLimits(std::ofstream& stream, std::vector<double>& minArmLimits,std::vector<double>& maxArmLimits);
+    void writeArmLimits(std::ofstream& stream, std::vector<double>& minArmLimits,std::vector<double>& maxArmLimits, int hand_code);
 
     /**
      * @brief This method writes down the initial posture of the arm
@@ -646,6 +658,29 @@ private:
      * @param transport
      */
     void writeBarrettHandDirKin(std::ofstream& stream, MatrixXd& tolsHand, bool final, bool transport);
+
+    /**
+     * @brief writeBarrettHandParams
+     * Thi method writes down the parameters of the Barrett Hand
+     * @param bhand
+     * @param stream
+     */
+    void writeElectricGripperParams(ElectricGripper& egripper, std::ofstream& stream);
+
+    /**
+     * @brief This method writes down the declaration of the parameters of the Barrett hand
+     * @param stream
+     */
+    void writeElectricGripperParamsMod(std::ofstream& stream);
+
+    /**
+     * @brief This method writes down the direct kinematics of the Barrett hand
+     * @param stream
+     * @param tolsHand
+     * @param final
+     * @param transport
+     */
+    void writeElectricGripperDirKin(std::ofstream& stream, MatrixXd& tolsHand, bool final, bool transport);
 
     /**
      * @brief writeInfoTarget
@@ -897,7 +932,7 @@ private:
      * @param finalPosture
      * @return
      */
-    int getSteps(std::vector<double>& maxLimits,std::vector<double>& minLimits,std::vector<double>& initPosture,std::vector<double>& finalPosture);
+    int getSteps(std::vector<double>& maxLimits,std::vector<double>& minLimits,std::vector<double>& initPosture,std::vector<double>& finalPosture, int hand_code);
 
 
     /**
@@ -1022,12 +1057,6 @@ private:
      * @param orient
      */
     void getHandOr(int arm, vector<double> &posture,vector<double> &orient);
-
-
-    //bool singleArmInvKinematics(hump_params& params,std::vector<double> &init_posture,std::vector<double>& hand_pose,std::vector<double>& goal_posture);
-
-
-
 };
 
 } // namespace HUMotion
