@@ -6832,11 +6832,10 @@ planning_result_ptr HUMPlanner::plan_place(hump_params &params, std::vector<doub
                     {
                         if(hand_code != 2)
                         {
+                            finalPosture_ext.push_back(finalHand.at(i));
+
                             if(i == 0)
-                            {
-                                finalPosture_ext.push_back(finalHand.at(i));
                                 finalPosture_post_place_ext.push_back(finalHand.at(i));
-                            }
                             else
                             {
                                 if((finalHand.at(i) - AP) > minLimits.at(i + 7))
@@ -6847,8 +6846,7 @@ planning_result_ptr HUMPlanner::plan_place(hump_params &params, std::vector<doub
                         }
                         else
                         {
-                            if(i == 0)
-                                finalPosture_ext.push_back(finalHand.at(i));
+                            finalPosture_ext.push_back(finalHand.at(i));
 
                             if(((finalHand.at(i) - AP_PRISMATIC) > minLimits.at(i + 7)))
                                 finalPosture_post_place_ext.push_back(finalHand.at(i) - AP_PRISMATIC);
