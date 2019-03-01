@@ -68,7 +68,7 @@ const double SPACER_PRISMATIC = 0.5; //[mm]
 
 const double PHI = (-log(2.0)/log(TB));/**< parameter to control when the bounce posture is reached */
 const double AP = 20.0 * static_cast<double>(M_PI) / 180; /**< aperture of the fingers when approaching to pick [rad] */
-const double AP_PRISMATIC = -5.0; /**< aperture of the fingers when approaching to pick [mm] */
+const double AP_PRISMATIC = -6.0; /**< aperture of the fingers when approaching to pick [mm] */
 
 const double BLANK_PERCENTAGE_TAR = 0.10; /**< percentage of steps to eliminate when either reaching to grasp an object [0,1]*/
 const double BLANK_PERCENTAGE_OBS = 0.20;/**< move at the beginning of a move movement [0,1] */
