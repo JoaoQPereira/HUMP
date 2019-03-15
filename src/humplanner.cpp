@@ -7104,7 +7104,7 @@ int HUMPlanner::getSteps(std::vector<double> &maxLimits, std::vector<double> &mi
 
     double num = (final-init).norm();
 
-    int n_steps = static_cast<int>(0.5 + (N_STEP_MIN + (N_STEP_MAX - N_STEP_MIN) * (num / den)));
+    int n_steps = static_cast<int>((N_STEP_MIN + (N_STEP_MAX - N_STEP_MIN) * (num / den)) + 0.5);
 
 
     if(hand_code == 2)
@@ -7112,7 +7112,7 @@ int HUMPlanner::getSteps(std::vector<double> &maxLimits, std::vector<double> &mi
         double denPris = abs(maxLimits.at(7) - minLimits.at(7));
         double numPris = abs(finalPosture.at(7) - initPosture.at(7));
 
-        int n_stepsPris = static_cast<int>(0.5 + (N_STEP_MIN_PRISMATIC + (N_STEP_MAX_PRISMATIC - N_STEP_MIN_PRISMATIC) * (numPris / denPris)));
+        int n_stepsPris = static_cast<int>((N_STEP_MIN_PRISMATIC + (N_STEP_MAX_PRISMATIC - N_STEP_MIN_PRISMATIC) * (numPris / denPris)) + 0.5);
 
         if(n_stepsPris > n_steps)
             n_steps = n_stepsPris;
