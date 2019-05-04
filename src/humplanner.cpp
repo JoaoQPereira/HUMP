@@ -5249,14 +5249,15 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
         }
         if((sqrt(pow(tar_pos(0) - shPos.at(0),2)+
                  pow(tar_pos(1) - shPos.at(1),2)+
-                 pow(tar_pos(2) - shPos.at(2),2))>= max_ext)||
+                 pow(tar_pos(2) - shPos.at(2),2)) >= max_ext) ||
                 (sqrt(pow(tar_pos_app(0) - shPos.at(0),2)+
                       pow(tar_pos_app(1) - shPos.at(1),2)+
-                      pow(tar_pos_app(2) - shPos.at(2),2))>= max_ext)||
+                      pow(tar_pos_app(2) - shPos.at(2),2)) >= max_ext) ||
                 (sqrt(pow(tar_pos_ret(0) - shPos.at(0),2)+
                       pow(tar_pos_ret(1) - shPos.at(1),2)+
-                      pow(tar_pos_ret(2) - shPos.at(2),2))>= max_ext)){
-            throw string("The movement to be planned goes out of the reachable workspace");
+                      pow(tar_pos_ret(2) - shPos.at(2),2)) >= max_ext))
+        {
+            //throw string("The movement to be planned goes out of the reachable workspace");
         }
     }
 
