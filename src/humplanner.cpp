@@ -4,10 +4,20 @@
 
 namespace HUMotion {
 
-unsigned HUMPlanner::joints_arm = 7;
+
+unsigned HUMPlanner::joints_arm = 6;
+//unsigned HUMPlanner::joints_arm = 7;
 unsigned HUMPlanner::joints_hand = 1;
 unsigned HUMPlanner::hand_fingers = 2;
 unsigned HUMPlanner::n_phalange = 0;
+
+std::vector<double> HUMPlanner::arange(double start, double stop, double step) {
+    std::vector<double> values;
+    for (double value = start; value < stop; value += step)
+        values.push_back(value);
+    return values;
+}
+
 
 HUMPlanner::HUMPlanner(string name = string ("Default Planner"))
 {
@@ -59,6 +69,10 @@ HUMPlanner::HUMPlanner(const HUMPlanner &hp)
     // scenario settings
     if(!hp.obstacles.empty()){this->obstacles=hp.obstacles;}
     //if(hp.obj_tar!=NULL){this->obj_tar=objectPtr(new Object(*(hp.obj_tar.get())));}
+
+    if(hp.waypoints!=nullptr)
+       this->waypoints = wpPtr(new HUMotion::Waypoint(*hp.waypoints.get()));
+
 }
 
 
@@ -79,6 +93,19 @@ string HUMPlanner::getName()
     return this->name;
 }
 
+
+void HUMPlanner::addWaypoint(wpPtr wp_ptr)
+{
+    //std::copy(this->waypoints.begin(),this->waypoints.end(), wpPtr(new Waypoint(*wp_ptr.get())));
+    //this->waypoints.push_back(wpPtr(new Waypoint(*wp_ptr.get())));
+    this->waypoints =  wpPtr(new Waypoint(*wp_ptr.get()));
+}
+
+void HUMPlanner::getWaypoints(wpPtr &wps)
+{
+   wps =this->waypoints;
+
+}
 
 void HUMPlanner::addObstacle(objectPtr obs)
 {
@@ -372,6 +399,94 @@ void HUMPlanner::setHumanHand(HumanHand &hhand)
 HumanHand HUMPlanner::getHumanHand()
 {
     return this->hhand;
+}
+
+void HUMPlanner::writeWaypoints(wp_traj wp_traj_spec, ofstream &stream)
+{
+
+     vector<double> wp_joints;
+     string joints;
+
+     stream << string("# Number of DOF \n");
+     stream << to_string(joints_arm)+string("\n");
+     stream << string("# Number of waypoint \n");
+     stream << to_string(this->waypoints->getWPnr())+string("\n");
+
+     stream << string("# First waypoint \n");
+     string x0_str;
+     for (int i=0; i<wp_traj_spec.x0_dof.size(); i++){
+         x0_str =  boost::str(boost::format("%.2f") % (wp_traj_spec.x0_dof.at(i)));
+
+         if (i == wp_traj_spec.x0_dof.size()-1){
+             stream << x0_str+string("\n");
+         }else{
+             stream << x0_str+string(",");
+         }
+     }
+
+
+     stream << string("# Last waypoint \n ");
+     string xf_str;
+     for (int i=0; i<wp_traj_spec.xf_dof.size(); i++){
+         xf_str =  boost::str(boost::format("%.2f") % (wp_traj_spec.xf_dof.at(i)));
+
+         if (i == wp_traj_spec.xf_dof.size()-1){
+             stream << xf_str+string("\n");
+         }else{
+             stream << xf_str+string(",");
+         }
+     }
+
+     for(int j=0;j<wp_traj_spec.x_wp_dof.size();j++)
+     {
+        wp_joints = wp_traj_spec.x_wp_dof.at(j);
+        stream << string("# waypoints joint: ") + to_string(j+1)+ string("\n");
+        //stream << string("Joints: ") + wp_joints.JntSpace.PosJoints + string(";\n");
+        for(std::size_t i=0; i< wp_joints.size(); ++i)
+        {
+            joints =  boost::str(boost::format("%.2f") % wp_joints.at(i));
+            if(i == wp_joints.size()-1)
+            {
+               stream << joints + string("\n");
+            }else{
+               stream << joints + string(",");
+            }
+        }
+     }
+
+}
+
+void HUMPlanner::writeFirstWaypoint(vector<double> x0_dof, ofstream &stream)
+{
+    stream << string("# First waypoint \n");
+    stream << string("param x0_dof := \n");
+    string x0_str;
+    for (int i=0; i<x0_dof.size(); i++){
+        x0_str =  boost::str(boost::format("%.2f") % (x0_dof.at(i)));
+
+        if (i == x0_dof.size()-1){
+            stream << to_string(i+1)+string(" ")+x0_str+string(";\n");
+        }else{
+            stream << to_string(i+1)+string(" ")+x0_str+string("\n");
+        }
+    }
+}
+
+
+void HUMPlanner::writeLastWaypoint(vector<double> xf_dof, ofstream &stream)
+{
+    stream << string("# Last waypoint \n ");
+    stream << string("param xf_dof := \n");
+    string xf_str;
+    for (int i=0; i<xf_dof.size(); i++){
+        xf_str =  boost::str(boost::format("%.2f") % (xf_dof.at(i)));
+
+        if (i == xf_dof.size()-1){
+            stream << to_string(i+1)+string(" ")+xf_str+string(";\n");
+        }else{
+            stream << to_string(i+1)+string(" ")+xf_str+string("\n");
+        }
+    }
 }
 
 
@@ -2714,6 +2829,147 @@ void HUMPlanner::Trans_matrix(std::vector<double> xyz, std::vector<double> rpy, 
     Trans(3,0) = 0;        Trans(3,1) = 0;        Trans(3,2) = 0;        Trans(3,3) = 1;
 }
 
+bool HUMPlanner::writeFilesWaypoints_py(double tf, wp_traj wp_traj_spec)
+{
+    //  --- create the "Models" directory if it does not exist ---
+    struct stat st = {0};
+    if (stat("Models", &st) == -1) {
+        mkdir("Models", 0700);
+    }
+    string path("Models/");
+
+    // ---- write the waypoints ---- //
+    string filename("waypoints.txt");
+    ofstream wp;
+
+    wp.open(path+filename);
+
+    // write the total time of the movement
+    wp << string("#Final time \n");
+    wp << string(to_string(tf)+"\n");
+
+    this->writeWaypoints(wp_traj_spec, wp);
+
+
+
+
+    //close the file
+    wp.close();
+
+    return true;
+}
+
+
+
+bool HUMPlanner::writeFilesWaypoints(wp_traj wp_traj_spec,std::vector <double> init_guess)
+{
+    //  --- create the "Models" directory if it does not exist ---
+    struct stat st = {0};
+    if (stat("Models", &st) == -1) {
+        mkdir("Models", 0700);
+    }
+    string path("Models/");
+
+
+    //------------------------- Write the dat file --------------------------------------------------
+    string filename("waypoints.dat");
+    ofstream wpDat;
+    // open the file
+    wpDat.open(path+filename);
+
+    wpDat << string("# Waypoints DATA FILE \n");
+    wpDat << string("# Units of measure: [rad], [mm] \n\n");
+
+    wpDat << string("data; \n");
+
+    //this->writeFirstWaypoint(wp_traj_spec.x0_dof,wpDat);
+    //this->writeWaypoints(wp_traj_spec.x_wp_dof,wpDat);
+    //this->writeLastWaypoint(wp_traj_spec.xf_dof,wpDat);
+
+    // initial guess
+    wpDat << string("# INITIAL GUESS \n");
+    wpDat << string("var time := \n");
+    for (int i=0; i<init_guess.size();i++){
+       //string guess =  boost::str(boost::format("%.2f") % (init_guess.at(i)));
+       string guess = to_string(init_guess[i]);
+       //boost::replace_all(guess,",",".");
+       if (i == init_guess.size()-1){
+            wpDat << to_string(i+1)+string(" ")+guess+string(";\n");
+       }else{
+            wpDat << to_string(i+1)+string(" ")+guess+string("\n");
+       }
+    }
+    wpDat << string("param tf:= 5; \n");
+
+    //close the file
+    //wpDat.close();
+
+
+    // ------------- Write the mod file ------------------------- //
+
+    string filenamemod("waypoints.mod");
+    ofstream wpMod;
+    // open the file
+    wpMod.open(path+filenamemod);
+    wpMod << string("# WAYPOINTS \n");
+   // wpMod << string("# Movement to plan: \n");
+   // wpMod << string("# ")+mov_infoLine+string("\n\n");
+
+    wpMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n");
+    wpMod << string("# decision variables \n\n");
+    wpMod << string("var time {i in 0..")+to_string(this->waypoints->getWPnr()-1)+string("} ;\n");
+    wpMod << string("param tf; \n");
+
+    // function to minimize
+    wpMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n");
+    wpMod << string("#  \n");
+    wpMod << string("#		      Objective function                # \n");
+    wpMod << string("#  \n");
+
+    //array time of size of number of waypoints
+    vector <double> time = vector <double>(this->waypoints->getWPnr());
+    //set a virtual initial guess in order to write the general expressions
+    for (int i=0; i<this->waypoints->getWPnr();i++){
+        time[i]=i;
+    }
+    this->objective_wp_time(wpMod,time,wp_traj_spec.x_wp_dof,wp_traj_spec.xf_dof,wp_traj_spec.x0_dof);
+
+    // teste
+    // wp_traj_spec.x_wp_dof = {{10,20},{20,40},{-5,60}};
+    // wp_traj_spec.xf_dof = {50,50,50} ;
+    // wp_traj_spec.x0_dof = {0,0,0};
+
+    // constraints
+    wpMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n");
+    wpMod << string("#  \n");
+    wpMod << string("#		      Constraints                  # \n");
+    wpMod << string("#  \n");
+
+    // write constraints
+    this->objective_wp_constraints(wpMod);
+    // check constraints
+    wpMod << string("# *+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*# \n\n\n");
+
+    // close the files
+    wpMod.close();
+    wpDat.close();
+
+    // ----- write run file for options --------
+
+    string filenamerun("options.run");
+    ofstream optionsrun;
+    // open the file
+    optionsrun.open(path+filenamerun);
+
+    optionsrun << string("option presolve 0; \n");
+    optionsrun << string("options ipopt_options \"halt_on_ampl_error yes\"; \n");
+    //close the file
+    optionsrun.close();
+
+
+    return true;
+
+}
 
 bool HUMPlanner::writeFilesFinalPosture(hump_params& params,int mov_type, int pre_post, std::vector<double> initArmPosture, std::vector<double> initialGuess,std::vector<objectPtr> obsts)
 {
@@ -5098,7 +5354,7 @@ bool HUMPlanner::amplRead(string &datFile, string &modFile, string &nlFile)
 bool HUMPlanner::optimize(string &nlfile, std::vector<Number> &x, double tol, double acc_tol, double constr_viol_tol)
 {
     // Create a new instance of IpoptApplication
-    //  (use a SmartPtr, not raw)
+    // (use a SmartPtr, not raw)
     // We are using the factory, since this allows us to compile this
     // example with an Ipopt Windows DLL
     SmartPtr<IpoptApplication> app = IpoptApplicationFactory();
@@ -5112,6 +5368,7 @@ bool HUMPlanner::optimize(string &nlfile, std::vector<Number> &x, double tol, do
     app->Options()->SetIntegerValue("print_level",3);
     app->Options()->SetNumericValue("mu_init", MU_INIT);
     app->Options()->SetStringValue("mu_strategy", "monotone"); //default option
+    //app->Options()->SetStringValue("halt_on_ampl_error","yes");
     //double bound_frac = 0.01;//k2
     //double bound_push = 0.01;//k1
     //double bound_relax_factor = 0.0;
@@ -5313,7 +5570,8 @@ bool HUMPlanner::singleArmFinalPosture(int mov_type,int pre_post,hump_params& pa
                 }else{return false;}
             }catch(const std::exception &exc){throw string(exc.what());}
         }else{throw string("Error in reading the files for optimization");}
-    }else{throw string("Error in writing the files for optimization");}
+    }
+    else{throw string("Error in writing the files for optimization");}
 
 }
 
@@ -5615,6 +5873,19 @@ void HUMPlanner::getDerivative(std::vector<double> &function, std::vector<double
         derFunction.push_back((double)(  3*f0 - 16*f1 + 36*f2 - 48*f3 + 25*f4)/(12*h*step_value));
     }
 }
+double HUMPlanner::getTimeStepWP(hump_params &tols, MatrixXd &jointTraj,int mod)
+{
+    int steps = jointTraj.rows();
+    int n_joints = jointTraj.cols();
+    double timestep;
+
+    std::vector<double> w_max = tols.w_max; // maximum angular velocity
+    std::vector<double> alpha_max = tols.alpha_max; // maximum angular acceleration
+    std::vector<double> lambda = tols.lambda_bounce;
+
+
+    return timestep;
+}
 
 
 double HUMPlanner::getTimeStep(hump_params &tols, MatrixXd &jointTraj,int mod)
@@ -5623,8 +5894,8 @@ double HUMPlanner::getTimeStep(hump_params &tols, MatrixXd &jointTraj,int mod)
     int n_joints = jointTraj.cols();
     double timestep;
 
-    std::vector<double> w_max = tols.w_max;
-    std::vector<double> alpha_max = tols.alpha_max;
+    std::vector<double> w_max = tols.w_max ; // maximum angular velocity
+    std::vector<double> alpha_max = tols.alpha_max; // maximum angular acceleration
     std::vector<double> lambda = tols.lambda_bounce;
 
     double num = 0.0;
@@ -5657,7 +5928,7 @@ double HUMPlanner::getTimeStep(hump_params &tols, MatrixXd &jointTraj,int mod)
 
     double totalTime = num/den;
     timestep = (totalTime/(steps-1));
-
+/*
     if(HAS_JOINT_ACCELEARATION_MAX_LIMIT)
     {
         // check the joint maximum velocity and acceleration
@@ -5717,6 +5988,7 @@ double HUMPlanner::getTimeStep(hump_params &tols, MatrixXd &jointTraj,int mod)
             }
         }
     }
+*/
     return timestep;
 }
 
@@ -7086,6 +7358,47 @@ planning_result_ptr HUMPlanner::plan_move(hump_params &params, std::vector<doubl
     return res;
 }
 
+int HUMPlanner::getStepsWP(std::vector<double> &maxLimits, std::vector<double> &minLimits, vector <wp_specs> wp)
+{
+    int diff = 0;
+
+    VectorXd max = VectorXd::Map(maxLimits.data(), maxLimits.size() - diff);
+    VectorXd min = VectorXd::Map(minLimits.data(), minLimits.size() - diff);
+
+    double den = (max-min).norm();
+
+    wp_specs wp_aux_first;
+    wp_specs wp_aux_second;
+
+    vector<double> initPosture;
+    vector<double> finalPosture;
+
+    double num = 0;
+    double sum = 0;
+    int n_steps;
+    int total_steps=0;
+    for (size_t i = 0; i< wp.size()-1; i++)
+    {
+        wp_aux_first = wp.at(i);
+        wp_aux_second = wp.at(i+1);
+
+        initPosture = wp_aux_first.JntSpace.PosJoints;
+        finalPosture = wp_aux_second.JntSpace.PosJoints;
+
+        VectorXd init = VectorXd::Map(initPosture.data(), initPosture.size() - diff);
+        VectorXd final = VectorXd::Map(finalPosture.data(), finalPosture.size() - diff);
+
+        num = (final-init).norm();
+       // sum = sum + num;
+
+        n_steps = static_cast<int>((N_STEP_MIN + (N_STEP_MAX - N_STEP_MIN) * (num / den)) + 0.5);
+
+        total_steps = total_steps + n_steps;
+    }
+
+    return total_steps;
+
+}
 
 int HUMPlanner::getSteps(std::vector<double> &maxLimits, std::vector<double> &minLimits, std::vector<double> &initPosture, std::vector<double> &finalPosture, int hand_code)
 {
@@ -7668,5 +7981,944 @@ bool HUMPlanner::singleArmInvKinematics(hump_params &params, std::vector<double>
 
 }
 */
+
+
+double HUMPlanner::get_eq(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int a , int b)
+{
+    double eq1=0;
+    double eq2=0;
+
+    eq1 = pow((1 - tau_wp1[a - 1]),5) * (-10*pow( tau_wp2[b - 1],3) + 15* pow( tau_wp2[b - 1], 4) - 6*pow(tau_wp2[b - 1],5)) +
+          pow((1 - tau_wp1[a - 1]),4) * (20*pow( tau_wp2[b - 1], 3) - 35*pow( tau_wp2[b - 1], 4 )+ 15*pow( tau_wp2[b - 1],5)) +
+          pow((1 - tau_wp1[a - 1]),3) * (-10*pow( tau_wp2[b - 1],3) + 20*pow( tau_wp2[b - 1], 4) -10* pow(tau_wp2[b - 1],5));
+    int pos1=0;
+   int pos2=0;
+   for (int i=0; i<tau_wp_or.size() ; i++ )
+   {
+       if (tau_wp1[a - 1]==tau_wp_or[i]) pos1=i;
+       if (tau_wp2[b - 1]==tau_wp_or[i]) pos2=i;
+   }
+
+   if (pos1 < pos2)
+   {
+    eq2 = pow((tau_wp2[b - 1] - tau_wp1[a - 1]),5);
+    return eq1 + eq2;
+   }else{
+    return eq1;
+   }
+}
+
+vector<double> HUMPlanner::den1_wp(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int n)
+{
+    double res=0;
+    vector <double> den;
+    int i = n;
+    while(i>0){
+        if(i%2==0){
+            res = -get_eq(tau_wp_or,tau_wp1,tau_wp2,i,n);
+        }else{
+            res = get_eq(tau_wp_or,tau_wp1,tau_wp2,i,n);
+        }
+
+        den.push_back(res);
+        i = i -1;
+    }
+    return den;
+}
+
+
+
+vector<double> HUMPlanner::num1_wp(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int n)
+{
+    double res=0;
+    vector <double> num;
+    int i = n;
+    if(n==1){
+        num.push_back(1);
+        return num;
+    }
+    while(i>0){
+        if(i%2==0){
+            res = -get_eq(tau_wp_or,tau_wp1,tau_wp2,n,i);
+        }
+        else{
+            res = get_eq(tau_wp_or,tau_wp1,tau_wp2,n,i);
+        }
+        num.push_back(res);
+        i = i -1;
+    }
+    return num;
+}
+
+double HUMPlanner::get_eq_den(vector <double> tau_wp_or, vector <double> tau_wp_bk, vector <double> tau_wp, double res)
+{
+    res=0;
+    int n = tau_wp.size();
+    if (n==0) return 1;
+    vector <double> part1;
+    double aux;
+
+    part1 = den1_wp(tau_wp_or, tau_wp, tau_wp_bk, tau_wp.size());
+    for ( int i =0; i< tau_wp.size(); i++)
+    {
+        if(n>1 and i>0){
+            aux = tau_wp[n-1-i];
+            tau_wp[n-1-i] = tau_wp[n-1];
+            tau_wp[n-1] = aux;
+        }
+        res = res + part1[i]*get_eq_den(tau_wp_or, std::vector<double>(tau_wp.begin(), tau_wp.end()-1), std::vector<double>(tau_wp_bk.begin(), tau_wp_bk.end()-1));
+
+    }
+    return res;
+}
+
+
+double HUMPlanner::get_eq_num(vector <double> tau_wp_or,vector <double> tau_wp_bk, vector <double> tau_wp, vector <double> x_wp,double xf,double x0, double res)
+{
+    res=0;
+    double aux=0;
+    int n = tau_wp.size();
+    vector <double> part1;
+
+    if (n==1){
+         return ((xf-x0)*(10*pow(tau_wp[0],3)-15*pow(tau_wp[0],4)+6*pow(tau_wp[0],5))-(x_wp[0]-x0));
+    }
+    part1 = num1_wp(tau_wp_or,tau_wp_bk,tau_wp,tau_wp.size());
+    for (int i=0; i<tau_wp.size(); i++){
+        if(n>1 and i>0){
+            aux = tau_wp[n-1-i];
+            tau_wp[n-1-i]=tau_wp[n-1];
+            tau_wp[n-1]=aux;
+            aux = x_wp[n-1-i];
+            x_wp[n-1-i]=x_wp[n-1];
+            x_wp[n-1]=aux;
+        }
+        res=res+part1[i]*get_eq_num(tau_wp_or,std::vector<double>(tau_wp_bk.begin(), tau_wp_bk.end()-1),std::vector<double>(tau_wp.begin(), tau_wp.end()-1),std::vector<double>(x_wp.begin(), x_wp.end()-1),xf,x0);
+    }
+
+    return res;
+}
+
+vector <double> HUMPlanner::get_pi_num(vector <double> tau_wp_or, vector <double> tau_wp, vector <double> x_wp,double xf,double x0)
+{
+
+    int n = tau_wp.size();
+    vector <double> pi;
+    double aux,res;
+    for (int i=0; i<tau_wp.size(); i++){
+        if(n>1 and i>0){
+            aux = tau_wp[0];
+            tau_wp[0]=tau_wp[i];
+            tau_wp[i]=aux;
+            aux = x_wp[0];
+            x_wp[0]=x_wp[i];
+            x_wp[i]=aux;
+        }
+        res=get_eq_num(tau_wp_or,tau_wp,tau_wp,x_wp,xf,x0);
+        pi.push_back(res);
+    }
+    return pi;
+}
+
+vector<double> HUMPlanner::get_pi_eq(double tf, vector <double> tau_wp, vector <double> x_wp, double xf, double x0){
+
+    vector <double> pi;
+    double pi_den;
+    vector <double> pi_num;
+    double res;
+   // double tf=5; // total time (see how to get from the library)
+    pi_den=get_eq_den(tau_wp,tau_wp,tau_wp);
+    pi_num=get_pi_num(tau_wp, tau_wp,x_wp,xf,x0);
+
+    for (int i =0; i<tau_wp.size();i++){
+        res= -120* pi_num[i]/(pow(tf,5)*pi_den);
+        pi.push_back(res);
+    }
+
+    return pi;
+}
+
+vector<double> HUMPlanner::get_equations(vector<double>tau_wp,vector<vector<double>>x_wp_dof,vector<double>xf_dof,vector<double> x0_dof, double tf)
+{
+    vector <double> eq;
+    vector <double> energy_eq;
+    double part1=0;
+    double part2=0;
+    double part3=0;
+
+    vector <vector<double>> pi_dof;
+    vector <vector<double>> part_dof;
+    double v_wp;
+    for ( int k=0; k<1; k++)
+    {
+        pi_dof.push_back(get_pi_eq(tf,tau_wp,x_wp_dof[k],xf_dof[k],x0_dof[k]));
+
+        for (int i=0; i<tau_wp.size();i++){
+           part1 =  part1 + pi_dof[k][i] * pow((1-tau_wp[i]),5);
+           part2 =  part2 + pi_dof[k][i] * pow((1-tau_wp[i]),4);
+           part3 =  part3 + pi_dof[k][i] * pow((1-tau_wp[i]),3);
+        }
+        vector <double> res;
+        res.push_back(part1);res.push_back(part2);res.push_back(part3);
+        part_dof.push_back(res);
+    }
+
+    for (int i =0; i< tau_wp.size(); i++ ){
+        double v2 =0;
+        double eq_time=0;
+
+        for (int j=0; j<1; j++){
+            for (int k =0; k<i; k++){
+                if(i==0){
+                    v2=0;
+                }else{
+                    v2 = v2 + pi_dof[j][k]*(5*pow((tau_wp[i]-tau_wp[k]),4));
+                }
+            }
+            v_wp =(xf_dof[j]-x0_dof[j])*(30*pow(tau_wp[i],2)-60*pow(tau_wp[i], 3) + 30*pow(tau_wp[i], 4))/tf + (pow(tf, 5)/120)/tf*(
+                                        (part_dof[j][0])*(-30*pow(tau_wp[i], 2) + 60*pow(tau_wp[i], 3)-30*pow(tau_wp[i], 4)) +
+                                        (part_dof[j][1])*(60*pow(tau_wp[i], 2) -140*pow(tau_wp[i], 3) +75*pow(tau_wp[i], 4)) +
+                                        (part_dof[j][2])*(-30*pow(tau_wp[i], 2) + 80*pow(tau_wp[i], 3)-50*pow(tau_wp[i], 4)) +
+                                        + v2);
+            eq_time = eq_time + pi_dof[j][i]*v_wp;
+        }
+        eq.push_back(eq_time);
+    }
+    return eq;
+
+}
+
+void HUMPlanner::get_eq_minus(vector<double> tau, vector <double> tau_wp, vector <double> pi, double xf_dof, double x0_dof, vector <double> &x_minus,vector <double> &v_minus,vector <double> &acc_minus, double tf)
+{
+
+    //vector <double> tau;
+    //tau=arange(0.0,1.0,0.01);
+
+    double part1=0;
+    double part2=0;
+    double part3=0;
+
+   // vector <double> x_minus, v_minus, acc_minus;
+
+    for (int i=0; i<tau_wp.size();i++){
+       part1 =  part1 + pi[i] * pow((1-tau_wp[i]),5);
+       part2 =  part2 + pi[i] * pow((1-tau_wp[i]),4);
+       part3 =  part3 + pi[i] * pow((1-tau_wp[i]),3);
+    }
+
+    for (int i=0; i<tau.size();i++){
+
+        // position before the waypoint 1
+        x_minus.push_back( x0_dof + (xf_dof -x0_dof)*(10*pow(tau[i], 3) -15*pow(tau[i], 4) + 6*pow(tau[i], 5)) + (pow(tf,5)/120) * (
+                    (part1)*(-10*pow(tau[i], 3)+15*pow(tau[i], 4)-6*pow(tau[i], 5)) +
+                    (part2)*(20*pow(tau[i], 3)-35*pow(tau[i], 4)+15*pow(tau[i], 5)) +
+                    (part3)*(-10*pow(tau[i], 3) + 20*pow(tau[i], 4)-10*pow(tau[i], 5)) ) );
+        // velocity before the waypoint 1
+        v_minus.push_back( (xf_dof -x0_dof)*(30*pow(tau[i], 2) -60*pow(tau[i], 3) + 30*pow(tau[i], 4))/tf + (pow(tf,4)/120) * (
+                    (part1)*(-30*pow(tau[i], 2)+60*pow(tau[i], 3)-30*pow(tau[i], 4)) +
+                    (part2)*(60*pow(tau[i], 2)-140*pow(tau[i], 3)+75*pow(tau[i], 4)) +
+                    (part3)*(-30*pow(tau[i], 2) + 80*pow(tau[i], 3)-50*pow(tau[i], 4))) );
+        // acceleration before the waypoint 1
+        acc_minus.push_back( (xf_dof -x0_dof)*(60*tau[i] -180*pow(tau[i], 2) + 120*pow(tau[i], 3))/pow(tf,2) + (pow(tf,3)/120) * (
+                    (part1)*(-60*tau[i]+180*pow(tau[i], 2)-120*pow(tau[i], 3)) +
+                    (part2)*(120*tau[i]-420*pow(tau[i], 2)+300*pow(tau[i], 3)) +
+                    (part3)*(-60*tau[i] + 240*pow(tau[i], 2)-200*pow(tau[i], 3))) );
+    }
+
+   // return std::make_tuple(x_minus, v_minus, acc_minus);
+}
+
+void HUMPlanner::get_eq_plus(vector <double> tau, vector <double> tau_wp, vector <double> pi, vector <double> x_minus, vector <double> v_minus,  vector <double> acc_minus, vector <vector<double>> &x_plus, vector <vector<double>> &v_plus, vector <vector<double>> &acc_plus, double tf)
+{
+
+   // vector <double> tau = arange(0.0,1.0,0.01);
+
+    x_plus = vector <vector<double>>(tau_wp.size());
+    v_plus = vector <vector<double>>(tau_wp.size());
+    acc_plus = vector <vector<double>>(tau_wp.size());
+    //vector <double> x_minus, v_minus, acc_minus;
+
+    //std::tie(x_minus,v_minus,acc_minus) = get_eq_minus(tau_wp,pi,xf_dof,x0_dof);
+
+    for (int i=0; i<tau_wp.size();i++)
+    {
+        for (int k=0; k<tau.size();k++)
+        {
+            if(tau_wp.size()==1 || i==0){
+                x_plus[i].push_back(x_minus[k] + pi[0] * pow(tf,5) * pow((tau[k] - tau_wp[i]),5) / 120);
+                v_plus[i].push_back(v_minus[k] + 5*pi[0] * pow(tf,4) * pow((tau[k] - tau_wp[i]),4) / 120);
+                acc_plus[i].push_back(acc_minus[k] + 20*pi[0] * pow(tf,3) * pow((tau[k] - tau_wp[i]),3) / 120);
+            }else{
+                x_plus[i].push_back(x_plus[i-1][k] + pi[i] * pow(tf,5) * pow((tau[k] - tau_wp[i]),5) / 120);
+                v_plus[i].push_back(v_plus[i-1][k] + 5*pi[i] * pow(tf,4) * pow((tau[k] - tau_wp[i]),4) / 120);
+                acc_plus[i].push_back(acc_plus[i-1][k] + 20*pi[i] * pow(tf,3) * pow((tau[k] - tau_wp[i]),3) / 120);
+
+            }
+        }
+    }
+
+    //return std::make_tuple(x_plus, v_plus, acc_plus);
+}
+
+
+void HUMPlanner::compose(double tf, int steps, vector<double>tau_wp,vector<double>pi, double xf_dof, double x0_dof,int joint, MatrixXd &pos,MatrixXd &vel, MatrixXd &acc, vector <double> &wp_pos_calc, vector <double> &wp_vel_calc, vector <double> &wp_acc_calc)
+{
+    //vector <double> tau = arange(0.0,1.0,0.01);
+    std::vector<double> tau = std::vector<double>(steps+1); // normalized time
+    double delta = ((double)1)/steps;
+    tau.at(0)=0.0;
+    for (int i = 1; i<=steps; ++i){
+        tau.at(i) = tau.at(i-1)+delta;
+    }
+
+    //get trajectory before first waypoint
+    vector <double> x_minus, v_minus, acc_minus;
+    this->get_eq_minus(tau,tau_wp,pi,xf_dof,x0_dof,x_minus,v_minus,acc_minus,tf);
+
+    //get trajectories after first waypoint
+    vector<vector<double>> x_plus,v_plus,acc_plus;
+    this->get_eq_plus(tau,tau_wp,pi,x_minus,v_minus,acc_minus,x_plus,v_plus,acc_plus,tf);
+
+    vector <double> time_wp;
+
+    int k=0;
+
+
+    for(int i =0; i<tau.size();i++){
+        //check if the
+        if(k<tau_wp.size()){
+            if(pow(tau[i]-tau_wp[k],2)<= 0.001){
+                time_wp.push_back(i); // save the composed time of every waypoint
+                k=k+1;
+            }
+        }
+
+        if(tau[i] <= tau_wp[0]){
+            pos(i,joint)=x_minus[i];
+            vel(i,joint)=v_minus[i];
+            acc(i,joint)=acc_minus[i];
+
+        }else{
+            pos(i,joint)= x_plus[k-1][i];
+            vel(i,joint)= v_plus[k-1][i];
+            acc(i,joint)= acc_plus[k-1][i];
+        }
+
+    }
+
+    // get the calculated position,velocity and acceleration of the joint in the waypoints
+    for(int i=0; i<time_wp.size();i++){
+        wp_pos_calc.push_back(pos(time_wp[i],joint));
+        wp_vel_calc.push_back(vel(time_wp[i],joint));
+        wp_acc_calc.push_back(acc(time_wp[i],joint));
+
+    }
+
+    //return std::make_tuple(pos, vel, acc, wp_pos_calc);
+
+}
+
+vector<double> HUMPlanner::get_init_guess(vector <double> x_wp, double x0, double xf)
+{
+    double sum_path=0;
+    vector <double> path_wp; // save the full path
+    vector <double> init_guess;
+    double guess = 0;
+    //calculate the path
+    for (int i=0; i<x_wp.size()+1;i++){
+        if(i==0){
+            sum_path = sum_path + abs(x0-x_wp.front());
+            path_wp.push_back(sum_path);
+        }
+        else if(i==x_wp.size()){
+            sum_path = sum_path + abs(xf-x_wp.back());
+        }
+        else{
+            sum_path = sum_path + abs(x_wp[i]-x_wp[i-1]);
+            path_wp.push_back(sum_path);
+        }
+    }
+
+    //calculate an aproximate initial guess
+    for ( int i=0; i<x_wp.size();i++)
+    {
+        guess = path_wp[i]/sum_path;
+        init_guess.push_back(guess);
+    }
+    return init_guess;
+
+
+}
+
+
+vector <double> HUMPlanner::get_init_guess_dof(vector <vector<double>> x_wp_dof,vector <double> xf_dof,vector <double> x0_dof)
+{
+    vector <vector<double>> init_guess_dof;
+    vector <double> init_guess;
+
+    double sum = 0 ;
+
+    //get an init guess for each DOF
+    for ( int i = 0; i<joints_arm; i++){
+        init_guess_dof.push_back(get_init_guess(x_wp_dof[i],x0_dof[i],xf_dof[i]));
+    }
+    //sum the init guess and do the average to get the final init guess
+    for (int k=0; k<this->waypoints->getWPnr(); k++){
+        for (int i=0; i<joints_arm; i++){
+            sum = sum + init_guess_dof[i][k];
+        }
+        init_guess.push_back(sum/joints_arm);
+        sum=0;
+    }
+    return init_guess;
+}
+
+// this function gives more initial guesses if the calculated initial guess is wrong
+vector <vector<double>> HUMPlanner::more_init_guess(vector <double> init_guess)
+{
+    vector <vector<double>> all_init_guess;
+    vector <double> guess;
+    vector <double> guess2;
+    vector <double> guess3;
+
+    // init_guess is the calculated initial guess
+    all_init_guess.push_back(init_guess);
+
+    //set more initial guesses in a small range of the calculated initial guess
+    for ( int i=0; i<init_guess.size(); i++){
+        guess.push_back(init_guess[i]-0.05);
+
+        //set 2 more initial guesses in a range +0.05 and -0.05 in the initial and last waypoint
+        if(init_guess[i]>0.1) guess2.push_back(init_guess[i]-0.05);
+        else guess2.push_back(init_guess[i]);
+
+        if(init_guess[i]<0.9) guess3.push_back(init_guess[i]+0.05);
+        else guess3.push_back(init_guess[i]);
+    }
+    all_init_guess.push_back(guess);
+    all_init_guess.push_back(guess2);
+    all_init_guess.push_back(guess3);
+
+
+    return all_init_guess;
+}
+
+vector <double> HUMPlanner::get_time_wp(vector<vector<double>> x_wp_dof, vector<double> xf_dof, vector<double> x0_dof)
+{
+    vector <vector<double>> init_guess;
+    vector <double> roots;
+    vector <double> energy;
+    vector <double> accept_guess;
+    bool solution = false;
+    vector <double> init_guess_dof;
+
+    // calculate an initial guess by the average of all dof's
+    init_guess_dof = get_init_guess_dof(x_wp_dof, xf_dof, x0_dof);
+    //get more initial guesses around the calculated one
+    init_guess = more_init_guess(init_guess_dof);
+
+    while(solution==false){
+        for ( int i=0; i<init_guess.size(); i++){
+            //solve non-linear equations to get the times of each waypoint
+        }
+    }
+
+
+}
+
+bool HUMPlanner::waypoint_time_solver_py(double tf, wp_traj wp_traj_spec , std::vector<double>& wp_time )
+{
+    bool written = this->writeFilesWaypoints_py(tf, wp_traj_spec);
+
+    string text;
+    if(written){
+        //call python to solve the problem
+        bool py = this->wp_time_py_solver();
+        if(py)
+        {
+            std::vector<int> numbers;
+            ifstream inputFile("Models/waypoints_sol.txt");        // Input file stream object
+
+            // Check if exists and then open the file.
+            if (inputFile.good()) {
+               // Push items into a vector
+               int current_number = 0;
+               while (getline(inputFile,text)){
+                   wp_time.push_back(stof(text));
+               }
+
+               // Close the file.
+               inputFile.close();
+
+             }else {throw string("Error in reading the solution from python");}
+
+        }else{throw string("Error in solving the problem from python");}
+
+    }else{throw string("Error in writing the files for python");}
+}
+
+bool HUMPlanner::wp_time_py_solver()
+{
+    string cmdLine;
+
+    //cmdLine = string("python3 Nwp_Ndof.py");
+    cmdLine = string("python3 /home/joao/ros_ws/src/motion/manager/scripts/Nwp_Ndof.py");
+
+    int status = system(cmdLine.c_str());
+    return(status==0);
+
+}
+
+bool HUMPlanner::waypoint_time_solver(wp_traj wp_traj_spec , std::vector<double>& wp_time )
+{
+
+    //vector <vector<double>> init_guess;
+    vector <double> init_guess;
+
+    // calculate an initial guess by the average of all dof's
+    init_guess = this->get_init_guess_dof(wp_traj_spec.x_wp_dof, wp_traj_spec.xf_dof, wp_traj_spec.x0_dof);
+    //init_guess =this->more_init_guess(init_guess_dof); //  more initial guesses around the calculated one
+    //init_guess.clear();
+    //init_guess.push_back(0.4);
+    // write the files for the AMPL to solve the waypoints time equations
+    bool written = this->writeFilesWaypoints(wp_traj_spec,init_guess );
+
+    if(written){
+        //call AMPL to produce the .nl file
+        string fn = string("waypoints");
+        bool nlwritten = this->amplRead(fn,fn,fn);
+        if(nlwritten){
+            // call ipopt for optimization
+            string nlfile = string("Models/")+fn+string(".nl");
+            std::vector<Number> x_sol;
+            try{
+                if(this->optimize(nlfile,x_sol,WP_TOL,WP_ACC_TOL,WP_CONSTR_VIOL_TOL)){
+                    wp_time = std::vector<double>(x_sol.size());
+                    for (std::size_t i=0; i < x_sol.size(); ++i){
+                        wp_time.at(i)=x_sol[i];
+                    }
+                    return true;
+                }else {return false;}
+
+            }catch(const std::exception &exc){throw string(exc.what());}
+
+        }else{throw string("Error in reading the files for optimization");}
+    } else{throw string("Error in writing the files for optimization");}
+}
+
+void HUMPlanner::organize_waypoints(vector <wp_specs> wp, wp_traj &wp_traj_spec)
+{
+    // get the waypoints in the necessary order
+    vector<double> xf_dof;
+    vector<double> x0_dof;
+    wp_specs wp_aux;
+    vector<vector<double>> x_wp_dof;
+    vector <double> wps_joint;
+
+    for (int i=0; i<joints_arm; i++)  // i.. N DOF
+    //for (int i=0; i<1; i++)  // i.. N DOF
+    {
+        for(int j=0;j<wp.size();j++)// j .. nmbr wps
+        {
+            wp_aux = wp.at(j);
+
+            if (j==0) // first waypoint
+                x0_dof = wp_aux.JntSpace.PosJoints;
+            else if(j==wp.size()-1) // last waypoint
+                xf_dof = wp_aux.JntSpace.PosJoints;
+            else wps_joint.push_back(wp_aux.JntSpace.PosJoints[i]);
+        }
+        x_wp_dof.push_back(wps_joint);
+        wps_joint.clear();
+    }
+
+    wp_traj_spec.x0_dof = x0_dof;
+    wp_traj_spec.xf_dof = xf_dof;
+    wp_traj_spec.x_wp_dof = x_wp_dof;
+}
+
+planning_result_ptr HUMPlanner::plan_waypoints(hump_params &params, vector <wp_specs> wp)
+{
+    // I need to save the waypoints as an array of joints, where each positions has the waypoints for that joint
+    // this is: [ joint1, joint2, ... jointN]
+    // joint1 = [ wp1, wp2, wp3, ..., wp_n]
+
+    // get the waypoints in the necessary order
+    wp_traj wp_traj_spec;
+    this->organize_waypoints(wp,wp_traj_spec);
+
+    int mov_type = 6; //  check the mov_type -- waypoints
+    
+    planning_result_ptr res;
+    res.reset(new planning_result);
+    res->mov_type = mov_type;
+    
+    // get the time of when the robot passes through each waypoint
+    vector <double> wp_time;
+    vector <double> pi_value;
+    vector <double> wp_pos;
+    vector <double> wp_vel;
+    vector <double> wp_acc;
+
+    MatrixXd pos;
+    MatrixXd vel;
+    MatrixXd acc;
+
+    int pre_post = 0; // 0 = use no options, 1 = use approach options, 2 = use retreat options
+    int mod=0; // 0 = move/waypoints, 1 = pre_approach, 2 = approach, 3 = retreat
+    int arm_code = params.mov_specs.arm_code;
+    std::vector<double> minLimits; std::vector<double> maxLimits;
+    switch(arm_code){
+    case 1: // right arm
+        minLimits = this->minRightLimits; // Its in radians. Should I work in radians or degrees?
+        maxLimits = this->maxRightLimits;
+
+        break;
+    case 2: // left arm
+        minLimits = this->minLeftLimits;
+        maxLimits = this->maxLeftLimits;
+        break;
+    }
+
+    wp_specs wp_aux_first;
+    wp_specs wp_aux_second;
+
+    vector<double> initPosture;
+    vector<double> finalPosture;
+
+
+    try
+    {
+        bool time_solve = false;
+        double timestep; MatrixXd traj_no_bound;
+        int steps = this->getStepsWP(maxLimits, minLimits,wp);
+        double num = 0;
+        double sum = 0;
+        for (size_t i = 0; i< wp.size()-1; i++)
+        {
+            wp_aux_first = wp.at(i);
+            wp_aux_second = wp.at(i+1);
+
+            initPosture = wp_aux_first.JntSpace.PosJoints;
+            finalPosture = wp_aux_second.JntSpace.PosJoints;
+
+            this->directTrajectoryNoBound(steps,initPosture,finalPosture,traj_no_bound);
+            timestep = this->getTimeStep(params,traj_no_bound,mod);
+
+            sum = sum + timestep;
+         }
+        timestep = sum;
+        res->time_steps.push_back(timestep);
+        double tf = timestep*steps; // calculate the total time of the movement
+
+        time_solve = this->waypoint_time_solver_py(tf,wp_traj_spec,wp_time);
+        //time_solve = this->waypoint_time_solver(wp_traj_spec,wp_time); // solve with AMPL AND IPOPT
+
+
+        pos = MatrixXd::Constant(steps+1,joints_arm,0);
+        vel = MatrixXd::Constant(steps+1,joints_arm,0);
+        acc = MatrixXd::Constant(steps+1,joints_arm,0);
+
+        if(time_solve){
+          res->status = 0; res->status_msg = string("HUMP: trajectory planned successfully");
+          res->time_steps.clear();
+          res->trajectory_stages.clear(); res->trajectory_descriptions.clear();
+          res->velocity_stages.clear();
+          res->acceleration_stages.clear();
+
+          for(int i=0;i<joints_arm;i++){
+             //get the trajectory, velocity and acceleration for each joint
+             pi_value = this->get_pi_eq(tf, wp_time,wp_traj_spec.x_wp_dof[i],wp_traj_spec.xf_dof[i],wp_traj_spec.x0_dof[i]);
+             this->compose(tf,steps,wp_time,pi_value,wp_traj_spec.xf_dof[i],wp_traj_spec.x0_dof[i],i,pos,vel,acc,wp_pos,wp_vel,wp_acc);
+             //save the position, velocity and acceleration at each waypoint
+          }
+          res->time_steps.push_back(timestep);
+          res->trajectory_stages.push_back(pos);res->trajectory_descriptions.push_back("plan");
+          res->velocity_stages.push_back(vel);
+          res->acceleration_stages.push_back(acc);
+
+        }else{res->status = 100; res->status_msg = string("HUMP: Calculation of the waypoints time failed ");}
+            
+    }catch (const string message){throw message;
+                                 }catch( ... ){throw string ("HUMP: error in optimizing the trajecory");}
+    
+  return res;
+}
+
+
+
+
+string HUMPlanner::get_eq_print(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int a , int b)
+{
+    string eq1;
+    string eq2;
+
+   int pos1=0;
+   int pos2=0;
+   for (int i=0; i<tau_wp_or.size() ; i++ )
+   {
+       if (tau_wp1[a - 1]==tau_wp_or[i]) pos1=i;
+       if (tau_wp2[b - 1]==tau_wp_or[i]) pos2=i;
+   }
+
+  // eq1 = string("((1-")+to_string(tau_wp_or[pos1])+string(")^5")+ string("*(-10* (") +to_string(tau_wp_or[pos2])+string(")^3 ") + string("+15*(") +to_string(tau_wp_or[pos2])+ string(")^4 ")  + string("-6*(") +to_string(tau_wp_or[pos2])+string(")^5 )")+
+  //       string("+(1-")+to_string(tau_wp_or[pos1])+string(")^4")+ string("*( 20* (") +to_string(tau_wp_or[pos2])+string(")^3 ")+ string("-35*(") +to_string(tau_wp_or[pos2])+ string(")^4 ")  + string("+15*(") +to_string(tau_wp_or[pos2])+string(")^5 )")+
+  //       string("+(1-")+to_string(tau_wp_or[pos1])+string(")^3")+ string("*(-10* (") +to_string(tau_wp_or[pos2])+string(")^3 ") + string("+20*(") +to_string(tau_wp_or[pos2])+ string(")^4 ")  + string("-10*(") +to_string(tau_wp_or[pos2])+string(")^5 ))") ;
+
+   eq1 = string("((1-")+string("time[")+to_string(pos1)+string("])^5")+ string("*(-10* (") +string("time[")+to_string(pos2)+string("])^3 ") + string("+15*(") + string("time[")+to_string(pos2)+ string("])^4 ") + string("-6*(")  +string("time[")+to_string(pos2)+string("])^5 )")+
+         string("+(1-")+string("time[")+to_string(pos1)+string("])^4")+ string("*( 20* (") +string("time[")+to_string(pos2)+string("])^3 ")+ string("-35*(")  + string("time[")+to_string(pos2)+ string("])^4 ") + string("+15*(") +string("time[")+to_string(pos2)+string("])^5 )")+
+         string("+(1-")+string("time[")+to_string(pos1)+string("])^3")+ string("*(-10* (") +string("time[")+to_string(pos2)+string("])^3 ") + string("+20*(") + string("time[")+to_string(pos2)+ string("])^4 ") + string("-10*(") +string("time[")+to_string(pos2)+string("])^5 ))") ;
+
+
+   if (pos1 < pos2)
+   {
+ // eq2 = string("((")+to_string(tau_wp_or[pos2])+ string("-") + to_string(tau_wp_or[pos1])+string(")^5)");
+    eq2 = string("((")+string("time[")+to_string(pos2)+ string("]-") +string("time[")+to_string(pos1)+string("])^5)");
+
+    return eq1 + string("+") + eq2;
+   }else{
+    return eq1;
+   }
+}
+
+vector<string> HUMPlanner::den1_wp_print(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int n)
+{
+    string res;
+    vector <string> den;
+    int i = n;
+    while(i>0){
+        if(i%2==0){
+            res = string("(-(")+get_eq_print(tau_wp_or,tau_wp1,tau_wp2,i,n)+string("))");
+        }else{
+            res = string("(")+get_eq_print(tau_wp_or,tau_wp1,tau_wp2,i,n)+string(")");
+        }
+
+        den.push_back(res);
+        i = i -1;
+    }
+    return den;
+}
+
+
+
+vector<string> HUMPlanner::num1_wp_print(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int n)
+{
+    string res;
+    vector <string> num;
+    int i = n;
+    if(n==1){
+        num.push_back(string("1"));
+        return num;
+    }
+    while(i>0){
+        if(i%2==0){
+            res = string("(-(")+get_eq_print(tau_wp_or,tau_wp1,tau_wp2,n,i)+string("))");
+        }
+        else{
+            res = string("(")+get_eq_print(tau_wp_or,tau_wp1,tau_wp2,n,i)+string(")");
+        }
+        num.push_back(res);
+        i = i -1;
+    }
+    return num;
+}
+
+string HUMPlanner::get_eq_den_print(vector <double> tau_wp_or, vector <double> tau_wp_bk, vector <double> tau_wp, string res)
+{
+   // string res;
+    int n = tau_wp.size();
+    if (n==0) return string("1");
+    vector <string> part1;
+    double aux;
+
+    part1 = den1_wp_print(tau_wp_or, tau_wp, tau_wp_bk, tau_wp.size());
+    for ( int i =0; i< tau_wp.size(); i++)
+    {
+        if(n>1 and i>0){
+            aux = tau_wp[n-1-i];
+            tau_wp[n-1-i] = tau_wp[n-1];
+            tau_wp[n-1] = aux;
+        }
+        res = res + string("+")+ part1[i]+ string("*(")+get_eq_den_print(tau_wp_or, std::vector<double>(tau_wp.begin(), tau_wp.end()-1), std::vector<double>(tau_wp_bk.begin(), tau_wp_bk.end()-1))+ string(")");
+
+    }
+    return res;
+}
+
+
+string HUMPlanner::get_eq_num_print(vector <double> tau_wp_or,vector <double> tau_wp_bk, vector <double> tau_wp, vector <double> x_wp,double xf,double x0, string res)
+{
+    //string res;
+    double aux=0;
+    int n = tau_wp.size();
+    vector <string> part1;
+    int pos=0;
+    for (int i=0; i<tau_wp_or.size() ; i++ )
+    {
+        if (tau_wp[0]==tau_wp_or[i]) pos=i;
+    }
+    if (n==1){
+       //  return string("(")+to_string(xf-x0)+string(")*(10*(") + to_string(tau_wp[0])+string("^3)-15*(") + to_string(tau_wp[0])+ string("^4)+6*(") + to_string(tau_wp[0])+ string("^5))")+string("-(")+to_string(x_wp[0]-x0)+string(")");
+       return string("(")+to_string(xf-x0)+string(")*(10*(") + string("time[")+to_string(pos)+string("]^3)-15*(") + string("time[")+to_string(pos)+string("]^4)+6*(") +  string("time[")+to_string(pos)+ string("]^5))")+string("-(")+to_string(x_wp[0]-x0)+string(")");
+
+    }
+    part1 = num1_wp_print(tau_wp_or,tau_wp_bk,tau_wp,tau_wp.size());
+    for (int i=0; i<tau_wp.size(); i++){
+        if(n>1 and i>0){
+            aux = tau_wp[n-1-i];
+            tau_wp[n-1-i]=tau_wp[n-1];
+            tau_wp[n-1]=aux;
+            aux = x_wp[n-1-i];
+            x_wp[n-1-i]=x_wp[n-1];
+            x_wp[n-1]=aux;
+        }
+        res=res + string("+")+part1[i]+string("*(")+get_eq_num_print(tau_wp_or,std::vector<double>(tau_wp_bk.begin(), tau_wp_bk.end()-1),std::vector<double>(tau_wp.begin(), tau_wp.end()-1),std::vector<double>(x_wp.begin(), x_wp.end()-1),xf,x0)+")";
+    }
+
+    return res;
+}
+
+vector <string> HUMPlanner::get_pi_num_print(vector <double> tau_wp_or, vector <double> tau_wp, vector <double> x_wp,double xf,double x0)
+{
+
+    int n = tau_wp.size();
+    vector <string> pi;
+    double aux;
+    string res;
+    for (int i=0; i<tau_wp.size(); i++){
+        if(n>1 and i>0){
+            aux = tau_wp[0];
+            tau_wp[0]=tau_wp[i];
+            tau_wp[i]=aux;
+            aux = x_wp[0];
+            x_wp[0]=x_wp[i];
+            x_wp[i]=aux;
+        }
+        res=get_eq_num_print(tau_wp_or,tau_wp,tau_wp,x_wp,xf,x0);
+        pi.push_back(res);
+    }
+    return pi;
+}
+
+vector <string> HUMPlanner::get_pi_eq_print(vector <double> tau_wp, vector <double> x_wp, double xf, double x0){
+
+    vector <string> pi;
+    string pi_den;
+    vector <string> pi_num;
+    string res;
+   // double tf=5; // total time (see how to get from the library)
+    pi_den=get_eq_den_print(tau_wp,tau_wp,tau_wp);
+    pi_num=get_pi_num_print(tau_wp, tau_wp,x_wp,xf,x0);
+
+    for (int i =0; i<tau_wp.size();i++){
+       res = string("-120*(")+pi_num[i]+string(")/((tf^5)*(")+pi_den+string("))");
+       pi.push_back(res);
+    }
+    return pi;
+}
+
+void HUMPlanner::objective_wp_time(ofstream &stream,vector<double>tau_wp,vector<vector<double>>x_wp_dof,vector<double>xf_dof,vector<double> x0_dof)
+{
+    /**
+        equations to solve are:
+
+        1waypoint : pi1_1*v0 + pi1_2*v1 + pi1_3*v2 + ... + pi1_J*v1_J-1 ->> J joints
+        2waypoint : pi2_1*v0 + pi2_2*v1 + pi2_3*v2 + ... + pi2_J*v2_J-1 ->> J joints
+        ...
+        N waypoint: piN_1*v0 + piN_2*v1 + piN_3*v2 + ... + piN_J*vN_J-1 ->> J joints
+
+        minimize: sqrt ( 1waypoint ^2 + ... + Nwaypoint ^2)
+    */
+    string part1 = "0";
+    string part2 = "0";
+    string part3 = "0";
+
+    vector <vector<string>> pi_dof;
+    vector <vector<string>> part_dof;
+    string v_wp;
+    // get pi for each waypoint and joint
+    for ( int k=0; k<joints_arm; k++)
+    {
+        pi_dof.push_back(get_pi_eq_print(tau_wp,x_wp_dof[k],xf_dof[k],x0_dof[k]));
+
+        for (int i=0; i<tau_wp.size();i++){
+           part1 =  part1 + string("+(") + pi_dof[k][i] + string(")*(")+ string("(1-time[")+to_string(i)+string("])^5)");
+           part2 =  part2 + string("+(") + pi_dof[k][i] + string(")*(")+ string("(1-time[")+to_string(i)+string("])^4)");
+           part3 =  part3 + string("+(") + pi_dof[k][i] + string(")*(")+ string("(1-time[")+to_string(i)+string("])^3)");
+        }
+        vector <string> res;
+        res.push_back(part1);res.push_back(part2);res.push_back(part3);
+        part_dof.push_back(res);
+    }
+
+    stream << string("minimize z: sqrt(") ;
+
+    for (int i =0; i< tau_wp.size(); i++ ){
+        string v2 = "0";
+        string eq_time= "";
+
+
+
+        for (int j=0; j<joints_arm; j++)
+        {
+            for (int k =0; k<i; k++){
+                if(i==0){
+                    v2= "0";
+                }else{
+                    v2 = v2 + string("+(") + pi_dof[j][k] + string(")*") + string("(5*(time[")+to_string(i)+string("]-time[")+to_string(k)+string("])^4)");
+                }
+            }
+            //velocity for each waypoint and joint
+            v_wp = string("(")+to_string(xf_dof[j]-x0_dof[j])+string(")*(")+string("30*(time[")+to_string(i)+string("])^2") +string("-60*(time[")+to_string(i)+string("])^3")+string("+30*(time[")+to_string(i)+string("])^4)/tf")
+                    //+string("+(")+to_string(pow(tf,4))+string("/120)* (")+
+                     +string("+((tf)^4/120)* (")+
+                     string("(")+part_dof[j][0]+string(")*(") + string("-30*(time[")+to_string(i)+string("])^2") + string("+60*(time[")+to_string(i)+string("])^3") + string("-30*(time[")+to_string(i)+string("])^4)+") +
+                     string("(")+part_dof[j][1]+string(")*(") + string("+60*(time[")+to_string(i)+string("])^2") + string("-140*(time[")+to_string(i)+string("])^3") + string("+75*(time[")+to_string(i)+string("])^4)+") +
+                     string("(")+part_dof[j][2]+string(")*(") + string("-30*(time[")+to_string(i)+string("])^2") + string("+80*(time[")+to_string(i)+string("])^3") + string("-50*(time[")+to_string(i)+string("])^4)+") +
+                     v2+string(")");
+
+            // parenthesis "( "  for ( pi_dof1 * v_wp1 ) ^2
+            stream << string(" +(") ;
+            // (pi_dof1 * v_wp1) + ... + (pi_dofN * v_wpN)
+            stream <<string("(")+pi_dof[j][i]+string(")*(")+v_wp+string(")");
+            // parenthesis ") ^2"  for ( pi_dof1 * v_wp1 ... ) ^2
+            stream << string(" )^2 ") ;
+        }
+
+
+    }
+
+    // second part of the ( .. ) ^1/2
+    stream << string(");\n \n");
+
+}
+
+void HUMPlanner::objective_wp_constraints(ofstream &stream)
+{
+    /** constraints
+     *
+     * t1<t2<...<tN
+     * t1>0
+     * tN<1
+    */
+/*
+    stream << string("subject to time_order:") ;
+    for (int i=0; i<this->waypoints->getWPnr();i++){
+        if(i==this->waypoints->getWPnr()-1)
+            stream << string("time[")+to_string(i)+string("];\n");
+        else
+            stream << string("time[")+to_string(i)+string("]<");
+
+    }
+*/
+    stream << string("subject to time_interval_t0:");
+    stream << string("time[0]>=0.01; \n");
+    stream << string("subject to teste:");
+    stream << string("(time[1]-time[0])>=0.01; \n");
+    stream << string("subject to time_interval_tN:");
+    stream << string("time[")+to_string(this->waypoints->getWPnr()-1)+string("]<=0.99; \n");
+
+
+}
 
 } // namespace HUMotion

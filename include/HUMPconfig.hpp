@@ -18,11 +18,10 @@
 #include <boost/format.hpp>
 #include <fstream>
 #include <eigen3/Eigen/Dense>
+#include <tuple>
 
 #include "../config/config.hpp"
 #include "object.hpp"
-
-
 
 /** version of the library */
 #define HUMP_VERSION_MAJOR 2
@@ -51,6 +50,12 @@ namespace HUMotion{
 
 typedef boost::shared_ptr<Object> objectPtr;/**< shared pointer to an object in the scenario */
 
+//waypoints time problem ipopt options
+const double WP_TOL = 1e-6; /**< desired convergence tolerance */
+const double WP_ACC_TOL = 1e-2; /**< acceptable convergence tolerance */
+const double WP_CONSTR_VIOL_TOL = 0.0001; /**< constraints violation tolerance */
+
+
 // Final posture selection problem ipopt options
 const double FINAL_TOL = 1e-6; /**< desired convergence tolerance */
 const double FINAL_ACC_TOL = 1e-2; /**< acceptable convergence tolerance */
@@ -75,6 +80,7 @@ const double BLANK_PERCENTAGE_OBS = 0.20;/**< move at the beginning of a move mo
 
 const int N_STEP_MIN = 5; /**< minimum number of steps for revolute joints */
 const int N_STEP_MAX = 50; /**< maximum number of steps for revolute joints */
+
 const int N_STEP_MIN_PRISMATIC = 5; /**< minimum number of steps for the prismatic joints */
 const int N_STEP_MAX_PRISMATIC = 20; /**< maximum number of steps for the prismatic joints */
 
@@ -159,6 +165,40 @@ typedef struct{
     double maxAperture; /**< max aperture of the hand in [mm] */
 } HumanHand;
 
+/** this struct defines the  waypoint in Operational Space */
+typedef struct wp_operat{
+    double Xpos; /**< position of the part along the x axis in [mm] */
+    double Ypos; /**< position of the part along the y axis in [mm] */
+    double Zpos; /**< position of the part along the z axis in [mm] */
+    double Roll; /**< orientation of the part around the z axis in [rad] */
+    double Pitch; /**< orientation of the part around the y axis in [rad] */
+    double Yaw; /**< orientation of the part around the x axis in [rad] */
+    vector <double> velocity; /**< vector of angular velocity of the end effector in the waypoint   */
+    vector <double> accelaration; /**< vector of angular accelaration of the end effector in the waypoint */
+}OperatSpace;
+
+/** this struct defines the  waypoint in Joint Space */
+typedef struct wp_joint{
+    vector <double> PosJoints; /** vector of Joints Positions in Joint Space*/
+    vector <double> velocity; /**< vector of angular velocity of each joint in the waypoint   */
+    vector <double> accelaration; /**< vector of angular accelaration of each joint in the waypoint */
+}JointSpace;
+
+
+/** this struct defines the waypoint in Joint Space and Operational Space*/
+typedef struct wp_det{
+    string name;
+    JointSpace JntSpace;
+    OperatSpace OpSpace;
+}wp_specs;
+
+/** this struct defines the waypoints in the necessary order for planning the trajectory through waypoints */
+typedef struct wp_order{
+    vector<double> xf_dof; /** final waypoint for each joint  */
+    vector<double> x0_dof; /** initial waypoint for each joint  */
+    vector<vector<double>> x_wp_dof; /** vector that defines the waypoints that each joint must pass */
+}wp_traj;
+
 /** this struct defines the parameters of the movement */
 typedef struct{
     int arm_code; /**< the code of the arm: 0 = both arms, 1 = right arm, 2 = left arm */
@@ -208,6 +248,7 @@ typedef struct{
     vector<double> acc_approach; /**< acceleration of the joints in [rad/s²] at the beginning of the approach stage */
     vector<double> lambda_final; /**< weights for the final posture optimization */
     vector<double> lambda_bounce; /**< weights for the bounce posture optimization */
+    vector<double> lambda_wp; /**< weights of the joints for waypoints mode */
     vector<double> w_max; /**< maximum angular velocity for each joint [rad/s] */
     vector<double> alpha_max; /**< maximum angular acceleration for each joint [rad/s²] */
     bool obstacle_avoidance; /**< true to avoid obstacle */

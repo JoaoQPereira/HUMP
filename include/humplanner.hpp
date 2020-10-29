@@ -4,6 +4,7 @@
 #include "HUMPconfig.hpp"
 #include "amplinterface.hpp"
 #include "IpIpoptApplication.hpp"
+#include "waypoint.hpp"
 
 using namespace Ipopt;
 using namespace std;
@@ -11,6 +12,9 @@ using namespace std;
 namespace HUMotion{
 
 typedef boost::shared_ptr<planning_result> planning_result_ptr; /**< pointer to the results of the planning process*/
+typedef boost::shared_ptr<Waypoint> wpPtr; /**< pointer to the waypoints */
+
+
 
 //! The Object class
 /**
@@ -24,6 +28,9 @@ public:
     static unsigned joints_arm; /**< number of joints per arm */
     static unsigned joints_hand; /**< number of joints per hand */
     static unsigned n_phalange; /**< number of phalanges per finger */
+
+    std::vector<double> arange(double start, double stop, double step);
+
     /**
      * @brief HUMPlanner, a constructor
      * @param name
@@ -53,6 +60,17 @@ public:
      * @return
      */
     string getName();
+    /**
+     * @brief addWaypoint
+     * @param wp_ptr
+     */
+    void addWaypoint(wpPtr wp_ptr);
+    /**
+     * @brief getWaypoints
+     * @param wps
+     * @return
+     */
+    void getWaypoints(wpPtr &wps);
 
     /**
      * @brief addObstacle
@@ -318,13 +336,21 @@ public:
      */
     planning_result_ptr plan_move(hump_params& params, std::vector<double> initPosture, std::vector<double> finalPosture);
 
-
+    /**
+     * @brief plan_waypoints
+     * @param wp
+     *
+     * @return
+     */
+    planning_result_ptr plan_waypoints(hump_params &params,vector <wp_specs> wp);
 
 
 private:
 
     string name;/**< name of the planner */
     // scenario info
+    wpPtr waypoints;
+
     vector<objectPtr> obstacles; /**< obstacles in the scenario */
     // Robot info
     std::vector<double> shPose; /**< pose of the shoulder of the Robot: shPose(0)=x, shPose(1)=y, shPose(2)=z, shPose(3)=roll, shPose(4)=pitch, shPose(5)=yaw */
@@ -363,6 +389,8 @@ private:
      * @return
      */
     double getTimeStep(hump_params& tols, MatrixXd& jointTraj, int mod);
+
+    double getTimeStepWP(hump_params &tols, MatrixXd &jointTraj,int mod);
 
     /**
      * @brief setBoundaryConditions
@@ -934,6 +962,8 @@ private:
      */
     int getSteps(std::vector<double>& maxLimits,std::vector<double>& minLimits,std::vector<double>& initPosture,std::vector<double>& finalPosture, int hand_code);
 
+    int getStepsWP(std::vector<double> &maxLimits, std::vector<double> &minLimits, vector <wp_specs> wp);
+
 
     /**
      * @brief model_spheres
@@ -1057,6 +1087,282 @@ private:
      * @param orient
      */
     void getHandOr(int arm, vector<double> &posture,vector<double> &orient);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// trajectory through waypoints */
+    ///
+    /////////////////////////////////////////////////////////////////
+    /**
+     * @brief get_eq
+     * @param tau_wp_or
+     * @param tau_wp1
+     * @param tau_wp2
+     * @param a
+     * @param b
+     * @return
+     */
+    double get_eq(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int a , int b);
+    /**
+     * @brief den1_wp
+     * @param tau_wp_or
+     * @param tau_wp1
+     * @param tau_wp2
+     * @param n
+     * @return
+     */
+    vector<double> den1_wp(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int n);
+    /**
+     * @brief num1_wp
+     * @param tau_wp_or
+     * @param tau_wp1
+     * @param tau_wp2
+     * @param n
+     * @return
+     */
+    vector<double> num1_wp(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int n);
+    /**
+     * @brief get_eq_den
+     * @param tau_wp_or
+     * @param tau_wp_bk
+     * @param tau_wp
+     * @param res
+     * @return
+     */
+    double get_eq_den(vector <double> tau_wp_or, vector <double> tau_wp_bk, vector <double> tau_wp, double res=0);
+    /**
+     * @brief get_eq_num
+     * @param tau_wp_or
+     * @param tau_wp_bk
+     * @param tau_wp
+     * @param x_wp
+     * @param xf
+     * @param x0
+     * @param res
+     * @return
+     */
+    double get_eq_num(vector <double> tau_wp_or, vector <double> tau_wp_bk, vector <double> tau_wp, vector<double> x_wp,double xf,double x0, double res=0);
+    /**
+     * @brief get_pi_num
+     * @param tau_wp_or
+     * @param tau_wp
+     * @param x_wp
+     * @param xf
+     * @param x0
+     * @return
+     */
+    vector<double> get_pi_num(vector <double> tau_wp_or, vector <double> tau_wp, vector <double> x_wp,double xf,double x0);
+    /**
+     * @brief get_pi_eq
+     * @param tau_wp
+     * @param x_wp
+     * @param xf
+     * @param x0
+     * @return
+     */
+    vector<double> get_pi_eq(double tf,vector <double> tau_wp, vector <double> x_wp, double xf, double x0);
+    /**
+     * @brief get_equations
+     * @param tau_wp
+     * @param x_wp_dof
+     * @param xf_dof
+     * @param x0_dof
+     * @return
+     */
+    vector<double> get_equations(vector<double> tau_wp,vector<vector<double>> x_wp_dof,vector<double> xf_dof,vector<double> x0_dof, double tf);
+    /**
+     * @brief get_eq_minus
+     * @param tau_wp
+     * @param pi
+     * @param xf_dof
+     * @param x0_dof
+     * @param x_minus
+     * @param v_minus
+     * @param acc_minus
+     */
+    void get_eq_minus(vector<double> tau,vector <double> tau_wp, vector <double> pi, double xf_dof, double x0_dof, vector <double> &x_minus,vector <double> &v_minus,vector <double> &acc_minus, double tf);
+    /**
+     * @brief get_eq_plus
+     * @param tau_wp
+     * @param pi
+     * @param x_minus
+     * @param v_minus
+     * @param acc_minus
+     * @param x_plus
+     * @param v_plus
+     * @param acc_plus
+     */
+    void get_eq_plus(vector<double> tau,vector <double> tau_wp, vector <double> pi, vector <double> x_minus, vector <double> v_minus,  vector <double> acc_minus, vector <vector<double>> &x_plus, vector <vector<double>> &v_plus, vector <vector<double>> &acc_plus, double tf);
+    /**
+     * @brief compose
+     * @param tau_wp
+     * @param pi
+     * @param xf_dof
+     * @param x0_dof
+     * @param pos
+     * @param vel
+     * @param acc
+     * @param wp_pos_calc
+     * @param wp_vel_calc
+     * @param wp_acc_calc
+     */
+    void compose(double tf,int steps, vector<double>tau_wp,vector<double>pi, double xf_dof, double x0_dof,int joint, MatrixXd &pos, MatrixXd &vel, MatrixXd &acc, vector <double> &wp_pos_calc, vector <double> &wp_vel_calc, vector <double> &wp_acc_calc);
+    /**
+     * @brief get_init_guess
+     * @param x_wp
+     * @param x0
+     * @param xf
+     * @return
+     */
+    vector<double> get_init_guess(vector <double> x_wp, double x0, double xf);
+    /**
+     * @brief get_init_guess_dof
+     * @param x_wp_dof
+     * @param xf_dof
+     * @param x0_dof
+     * @return
+     */
+    vector <double> get_init_guess_dof(vector <vector<double>> x_wp_dof,vector <double> xf_dof,vector <double> x0_dof);
+    /**
+     * @brief more_init_guess
+     * @param init_guess
+     * @return
+     */
+    vector <vector<double>> more_init_guess(vector <double> init_guess);
+
+    /**
+     * @brief get_time_wp
+     * @param x_wp_dof
+     * @param xf_dof
+     * @param x0_dof
+     * @return
+     */
+    //function that returns the time of each waypoint
+    vector <double> get_time_wp(vector<vector<double>> x_wp_dof, vector<double> xf_dof, vector<double> x0_dof);
+    /**
+     * @brief waypoint_solver
+     * @param wp
+     * @param wp_time
+     * @return
+     */
+    bool waypoint_time_solver(wp_traj wp_traj_spec,std::vector<double>& wp_time);
+
+    bool wp_time_py_solver();
+
+
+    bool waypoint_time_solver_py(double tf, wp_traj wp_traj_spec , std::vector<double>& wp_time);
+
+    bool writeFilesWaypoints_py(double tf, wp_traj wp_traj_spec);
+
+    /**
+     * @brief writeFilesWaypoints
+     * @param wp
+     * @param xf_dof
+     * @param x0_dof
+     * @param init_guess
+     * @return
+     */
+    bool writeFilesWaypoints(wp_traj wp_traj_spec, std::vector <double> init_guess);
+    /**
+     * @brief writeWaypoints
+     * @param wp
+     * @param stream
+     */
+    void writeWaypoints(wp_traj wp_traj_spec, ofstream &stream);
+    /**
+     * @brief writeFirstWaypoint
+     * @param x0_dof
+     * @param stream
+     */
+    void writeFirstWaypoint( vector<double> x0_dof,ofstream &stream);
+    /**
+     * @brief writeLastWaypoint
+     * @param xf_dof
+     * @param stream
+     */
+    void writeLastWaypoint( vector<double> xf_dof,ofstream &stream);
+
+    /**
+    * @brief get_eq
+    * @param tau_wp_or
+    * @param tau_wp1
+    * @param tau_wp2
+    * @param a
+    * @param b
+    * @return
+    */
+   string get_eq_print(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int a , int b);
+   /**
+    * @brief den1_wp
+    * @param tau_wp_or
+    * @param tau_wp1
+    * @param tau_wp2
+    * @param n
+    * @return
+    */
+   vector<string> den1_wp_print(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int n);
+   /**
+    * @brief num1_wp
+    * @param tau_wp_or
+    * @param tau_wp1
+    * @param tau_wp2
+    * @param n
+    * @return
+    */
+   vector<string> num1_wp_print(vector <double> tau_wp_or, vector <double> tau_wp1, vector <double> tau_wp2, int n);
+   /**
+    * @brief get_eq_den
+    * @param tau_wp_or
+    * @param tau_wp_bk
+    * @param tau_wp
+    * @param res
+    * @return
+    */
+   string get_eq_den_print(vector <double> tau_wp_or, vector <double> tau_wp_bk, vector <double> tau_wp, string res = "");
+   /**
+    * @brief get_eq_num
+    * @param tau_wp_or
+    * @param tau_wp_bk
+    * @param tau_wp
+    * @param x_wp
+    * @param xf
+    * @param x0
+    * @param res
+    * @return
+    */
+   string get_eq_num_print(vector <double> tau_wp_or, vector <double> tau_wp_bk, vector <double> tau_wp, vector<double> x_wp,double xf,double x0, string res = "");
+   /**
+    * @brief get_pi_num
+    * @param tau_wp_or
+    * @param tau_wp
+    * @param x_wp
+    * @param xf
+    * @param x0
+    * @return
+    */
+   vector<string> get_pi_num_print(vector <double> tau_wp_or, vector <double> tau_wp, vector <double> x_wp,double xf,double x0);
+   /**
+    * @brief get_pi_eq
+    * @param tau_wp
+    * @param x_wp
+    * @param xf
+    * @param x0
+    * @return
+    */
+   vector <string> get_pi_eq_print(vector <double> tau_wp, vector <double> x_wp, double xf, double x0);
+   /**
+    * @brief get_equations
+    * @param tau_wp
+    * @param x_wp_dof
+    * @param xf_dof
+    * @param x0_dof
+    * @return
+    */
+   void objective_wp_time(ofstream &stream,vector<double> tau_wp,vector<vector<double>> x_wp_dof,vector<double> xf_dof,vector<double> x0_dof);
+
+
+   void objective_wp_constraints(ofstream &stream);
+
+   void organize_waypoints(vector <wp_specs>wp, wp_traj &wp_traj_spec);
 };
 
 } // namespace HUMotion
