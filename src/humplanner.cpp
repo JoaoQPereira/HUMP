@@ -5928,7 +5928,7 @@ double HUMPlanner::getTimeStep(hump_params &tols, MatrixXd &jointTraj,int mod)
 
     double totalTime = num/den;
     timestep = (totalTime/(steps-1));
-/*
+
     if(HAS_JOINT_ACCELEARATION_MAX_LIMIT)
     {
         // check the joint maximum velocity and acceleration
@@ -5948,6 +5948,21 @@ double HUMPlanner::getTimeStep(hump_params &tols, MatrixXd &jointTraj,int mod)
             {
                 vel_f = tols.vel_approach;
                 acc_f = std::vector<double>(tols.bounds.acc_0.size(), 0.0);
+            }
+            else if(mod ==4)
+            {
+                
+                vel_0 = std::vector<double> (n_joints);
+                vel_f = std::vector<double> (n_joints);
+                acc_0 = std::vector<double> (n_joints);
+                acc_f = std::vector<double> (n_joints);
+                
+                for(int i=0; i<n_joints; i++){
+                    vel_0.at(i) = 0;
+                    vel_f.at(i) = 0;
+                    acc_0.at(i) = 0;
+                    vel_f.at(i) = 0;
+                }
             }
 
             for (int k =0; k < n_joints; ++k)
@@ -5988,7 +6003,7 @@ double HUMPlanner::getTimeStep(hump_params &tols, MatrixXd &jointTraj,int mod)
             }
         }
     }
-*/
+
     return timestep;
 }
 
@@ -7389,14 +7404,17 @@ int HUMPlanner::getStepsWP(std::vector<double> &maxLimits, std::vector<double> &
         VectorXd final = VectorXd::Map(finalPosture.data(), finalPosture.size() - diff);
 
         num = (final-init).norm();
-       // sum = sum + num;
+        sum = sum + num;
 
-        n_steps = static_cast<int>((N_STEP_MIN + (N_STEP_MAX - N_STEP_MIN) * (num / den)) + 0.5);
+        //n_steps = static_cast<int>((N_STEP_MIN + (N_STEP_MAX - N_STEP_MIN) * (num / den)) + 0.5);
 
-        total_steps = total_steps + n_steps;
+        //total_steps = total_steps + n_steps;
     }
 
-    return total_steps;
+    n_steps = static_cast<int>((N_STEP_MIN + (N_STEP_MAX - N_STEP_MIN) * (sum / den)) + 0.5);
+
+    return n_steps;
+    // return total_steps;
 
 }
 
@@ -8284,14 +8302,8 @@ void HUMPlanner::compose(double tf, int steps, vector<double>tau_wp,vector<doubl
     int k=0;
 
 
-    for(int i =0; i<tau.size();i++){
-        //check if the
-        if(k<tau_wp.size()){
-            if(pow(tau[i]-tau_wp[k],2)<= 0.001){
-                time_wp.push_back(i); // save the composed time of every waypoint
-                k=k+1;
-            }
-        }
+    for(int i =0; i<tau.size();i++)
+    {
 
         if(tau[i] <= tau_wp[0]){
             pos(i,joint)=x_minus[i];
@@ -8302,6 +8314,14 @@ void HUMPlanner::compose(double tf, int steps, vector<double>tau_wp,vector<doubl
             pos(i,joint)= x_plus[k-1][i];
             vel(i,joint)= v_plus[k-1][i];
             acc(i,joint)= acc_plus[k-1][i];
+        }
+
+        if(k<tau_wp.size()){
+ //           if(pow(tau[i]-tau_wp[k]),2)<= pow(delta,2)){
+            if((tau[i]-tau_wp[k])*(tau[i]-tau_wp[k])<= (delta*delta)){
+                time_wp.push_back(i); // save the composed time of every waypoint
+                k=k+1;
+            }
         }
 
     }
@@ -8462,7 +8482,7 @@ bool HUMPlanner::wp_time_py_solver()
     string cmdLine;
 
     //cmdLine = string("python3 Nwp_Ndof.py");
-    cmdLine = string("python3 /home/joao/ros_ws/src/motion/manager/scripts/Nwp_Ndof.py");
+    cmdLine = string("python3 /home/joao/ros_ws/src/motion_manager/scripts/Nwp_Ndof.py");
 
     int status = system(cmdLine.c_str());
     return(status==0);
@@ -8565,7 +8585,7 @@ planning_result_ptr HUMPlanner::plan_waypoints(hump_params &params, vector <wp_s
     MatrixXd acc;
 
     int pre_post = 0; // 0 = use no options, 1 = use approach options, 2 = use retreat options
-    int mod=0; // 0 = move/waypoints, 1 = pre_approach, 2 = approach, 3 = retreat
+    int mod=4; // 0 = move, 1 = pre_approach, 2 = approach, 3 = retreat , 4 = waypoints
     int arm_code = params.mov_specs.arm_code;
     std::vector<double> minLimits; std::vector<double> maxLimits;
     switch(arm_code){
