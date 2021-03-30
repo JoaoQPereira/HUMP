@@ -408,17 +408,17 @@ void HUMPlanner::writeWaypoints(wp_traj wp_traj_spec, ofstream &stream)
      string joints;
 
      stream << string("# Number of DOF \n");
-     stream << to_string(joints_arm)+string("\n");
+     stream << to_string(joints_arm)<< endl;
      stream << string("# Number of waypoint \n");
-     stream << to_string(this->waypoints->getWPnr())+string("\n");
+     stream << to_string(this->waypoints->getWPnr())<< endl;
 
-     stream << string("# First waypoint \n");
+     stream << string("# First waypoint ")<< endl;
      string x0_str;
      for (int i=0; i<wp_traj_spec.x0_dof.size(); i++){
-         x0_str =  boost::str(boost::format("%.2f") % (wp_traj_spec.x0_dof.at(i)));
+         x0_str =  boost::str(boost::format("%.4f") % (wp_traj_spec.x0_dof.at(i)*180/M_PI));
 
          if (i == wp_traj_spec.x0_dof.size()-1){
-             stream << x0_str+string("\n");
+             stream << x0_str << endl;
          }else{
              stream << x0_str+string(",");
          }
@@ -428,10 +428,10 @@ void HUMPlanner::writeWaypoints(wp_traj wp_traj_spec, ofstream &stream)
      stream << string("# Last waypoint \n ");
      string xf_str;
      for (int i=0; i<wp_traj_spec.xf_dof.size(); i++){
-         xf_str =  boost::str(boost::format("%.2f") % (wp_traj_spec.xf_dof.at(i)));
+         xf_str =  boost::str(boost::format("%.4f") % (wp_traj_spec.xf_dof.at(i)*180/M_PI));
 
          if (i == wp_traj_spec.xf_dof.size()-1){
-             stream << xf_str+string("\n");
+             stream << xf_str << endl;
          }else{
              stream << xf_str+string(",");
          }
@@ -440,14 +440,14 @@ void HUMPlanner::writeWaypoints(wp_traj wp_traj_spec, ofstream &stream)
      for(int j=0;j<wp_traj_spec.x_wp_dof.size();j++)
      {
         wp_joints = wp_traj_spec.x_wp_dof.at(j);
-        stream << string("# waypoints joint: ") + to_string(j+1)+ string("\n");
+        stream << string("# waypoints joint: ") + to_string(j+1) << endl;
         //stream << string("Joints: ") + wp_joints.JntSpace.PosJoints + string(";\n");
         for(std::size_t i=0; i< wp_joints.size(); ++i)
         {
-            joints =  boost::str(boost::format("%.2f") % wp_joints.at(i));
+            joints =  boost::str(boost::format("%.4f") % (wp_joints.at(i)*180/M_PI));
             if(i == wp_joints.size()-1)
             {
-               stream << joints + string("\n");
+               stream << joints << endl;
             }else{
                stream << joints + string(",");
             }
@@ -8470,11 +8470,16 @@ bool HUMPlanner::waypoint_time_solver_py(double tf, wp_traj wp_traj_spec , std::
                // Close the file.
                inputFile.close();
 
+               return true;
+
              }else {throw string("Error in reading the solution from python");}
 
-        }else{throw string("Error in solving the problem from python");}
+          }else{throw string("Error in solving the problem from python");}
 
     }else{throw string("Error in writing the files for python");}
+
+    return false;
+
 }
 
 bool HUMPlanner::wp_time_py_solver()
@@ -8611,7 +8616,8 @@ planning_result_ptr HUMPlanner::plan_waypoints(hump_params &params, vector <wp_s
     {
         bool time_solve = false;
         double timestep; MatrixXd traj_no_bound;
-        int steps = this->getStepsWP(maxLimits, minLimits,wp);
+       // int steps = this->getStepsWP(maxLimits, minLimits,wp);
+        int steps = 30;
         double num = 0;
         double sum = 0;
         for (size_t i = 0; i< wp.size()-1; i++)
