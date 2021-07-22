@@ -20,5 +20,5 @@
 #define TB 0.5
 //AMPL
 #define AMPL 0
-#define AMPL_PATH "/home/sara/AMPL"
+#define AMPL_PATH "/home/joao/AMPL"
 

@@ -1205,7 +1205,7 @@ private:
      * @param wp_vel_calc
      * @param wp_acc_calc
      */
-    void compose(double tf,int steps, vector<double>tau_wp,vector<double>pi, double xf_dof, double x0_dof,int joint, MatrixXd &pos, MatrixXd &vel, MatrixXd &acc, vector <double> &wp_pos_calc, vector <double> &wp_vel_calc, vector <double> &wp_acc_calc);
+    void compose(double tf,int steps, vector<double>tau_wp,vector<double>pi, double xf_dof, double x0_dof,int joint, MatrixXd &pos, MatrixXd &vel, MatrixXd &acc, MatrixXd &wp_pos_calc,MatrixXd &wp_vel_calc,vector<vector<double>> &pos_wp);
     /**
      * @brief get_init_guess
      * @param x_wp

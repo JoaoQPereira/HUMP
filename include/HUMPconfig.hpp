@@ -78,8 +78,8 @@ const double AP_PRISMATIC = -10; /**< aperture of the fingers when approaching t
 const double BLANK_PERCENTAGE_TAR = 0.10; /**< percentage of steps to eliminate when either reaching to grasp an object [0,1]*/
 const double BLANK_PERCENTAGE_OBS = 0.20;/**< move at the beginning of a move movement [0,1] */
 
-const int N_STEP_MIN = 5; /**< minimum number of steps for revolute joints */
-const int N_STEP_MAX = 50; /**< maximum number of steps for revolute joints */
+const int N_STEP_MIN = 10; /**< minimum number of steps for revolute joints */
+const int N_STEP_MAX = 100; /**< maximum number of steps for revolute joints */
 
 const int N_STEP_MIN_PRISMATIC = 5; /**< minimum number of steps for the prismatic joints */
 const int N_STEP_MAX_PRISMATIC = 20; /**< maximum number of steps for the prismatic joints */
@@ -266,6 +266,9 @@ typedef struct{
     vector<MatrixXd> acceleration_stages;/**< sequence of the accelerations */
     vector<double> time_steps; /**< sequence of each time steps for each trajectory */
     vector<string> trajectory_descriptions;/**< description of the trajectories */
+
+    MatrixXd calcWP; /** waypoints computed - used to get the error*/
+    vector <double> pos_wp; /** position of the waypoints in the trajectory vector*/
 }planning_result;
 
 

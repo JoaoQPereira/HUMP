@@ -8279,7 +8279,7 @@ void HUMPlanner::get_eq_plus(vector <double> tau, vector <double> tau_wp, vector
 }
 
 
-void HUMPlanner::compose(double tf, int steps, vector<double>tau_wp,vector<double>pi, double xf_dof, double x0_dof,int joint, MatrixXd &pos,MatrixXd &vel, MatrixXd &acc, vector <double> &wp_pos_calc, vector <double> &wp_vel_calc, vector <double> &wp_acc_calc)
+void HUMPlanner::compose(double tf, int steps, vector<double>tau_wp,vector<double>pi, double xf_dof, double x0_dof,int joint, MatrixXd &pos,MatrixXd &vel, MatrixXd &acc, MatrixXd &wp_pos_calc, MatrixXd &wp_vel_calc, vector<vector<double>> &posWP)
 {
     //vector <double> tau = arange(0.0,1.0,0.01);
     std::vector<double> tau = std::vector<double>(steps+1); // normalized time
@@ -8297,40 +8297,49 @@ void HUMPlanner::compose(double tf, int steps, vector<double>tau_wp,vector<doubl
     vector<vector<double>> x_plus,v_plus,acc_plus;
     this->get_eq_plus(tau,tau_wp,pi,x_minus,v_minus,acc_minus,x_plus,v_plus,acc_plus,tf);
 
-    vector <double> time_wp;
 
     int k=0;
-
+    vector <double> pos_wp;
 
     for(int i =0; i<tau.size();i++)
     {
 
-        if(tau[i] <= tau_wp[0]){
+        if(tau_wp.size()==0) // if no waypoints
+        {
             pos(i,joint)=x_minus[i];
             vel(i,joint)=v_minus[i];
             acc(i,joint)=acc_minus[i];
-
-        }else{
-            pos(i,joint)= x_plus[k-1][i];
-            vel(i,joint)= v_plus[k-1][i];
-            acc(i,joint)= acc_plus[k-1][i];
         }
+        else{
+            if(tau[i] <= tau_wp[0]){
+                pos(i,joint)=x_minus[i];
+                vel(i,joint)=v_minus[i];
+                acc(i,joint)=acc_minus[i];
 
-        if(k<tau_wp.size()){
- //           if(pow(tau[i]-tau_wp[k]),2)<= pow(delta,2)){
-            if((tau[i]-tau_wp[k])*(tau[i]-tau_wp[k])<= (delta*delta)){
-                time_wp.push_back(i); // save the composed time of every waypoint
-                k=k+1;
+            }else{
+                pos(i,joint)= x_plus[k-1][i];
+                vel(i,joint)= v_plus[k-1][i];
+                acc(i,joint)= acc_plus[k-1][i];
+            }
+
+            if(k<tau_wp.size()){
+                if((tau[i]-tau_wp[k])*(tau[i]-tau_wp[k])<= (delta*delta)){
+                    pos_wp.push_back(i); // save the composed time of every waypoint
+                    posWP[joint].push_back(i);
+                    k=k+1;
+                }
             }
         }
+
 
     }
 
     // get the calculated position,velocity and acceleration of the joint in the waypoints
-    for(int i=0; i<time_wp.size();i++){
-        wp_pos_calc.push_back(pos(time_wp[i],joint));
-        wp_vel_calc.push_back(vel(time_wp[i],joint));
-        wp_acc_calc.push_back(acc(time_wp[i],joint));
+    for(int i=0; i<pos_wp.size();i++){
+        wp_pos_calc(i,joint)=pos(pos_wp[i],joint);
+        wp_vel_calc(i,joint)=pos(pos_wp[i],joint);
+        //wp_pos_calc.push_back(pos(time_wp[i],joint));
+        //wp_vel_calc.push_back(vel(time_wp[i],joint));
 
     }
 
@@ -8581,9 +8590,9 @@ planning_result_ptr HUMPlanner::plan_waypoints(hump_params &params, vector <wp_s
     // get the time of when the robot passes through each waypoint
     vector <double> wp_time;
     vector <double> pi_value;
-    vector <double> wp_pos;
-    vector <double> wp_vel;
-    vector <double> wp_acc;
+    MatrixXd wp_pos = MatrixXd::Constant(wp.size()-2,joints_arm,0);
+    MatrixXd wp_vel = MatrixXd::Constant(wp.size()-2,joints_arm,0);;
+    vector<vector<double>> pos_wp = vector<vector<double>>(joints_arm);; /** position of the waypoints in the trajectory vector*/
 
     MatrixXd pos;
     MatrixXd vel;
@@ -8616,8 +8625,7 @@ planning_result_ptr HUMPlanner::plan_waypoints(hump_params &params, vector <wp_s
     {
         bool time_solve = false;
         double timestep; MatrixXd traj_no_bound;
-       // int steps = this->getStepsWP(maxLimits, minLimits,wp);
-        int steps = 30;
+        int steps = this->getStepsWP(maxLimits, minLimits,wp);
         double num = 0;
         double sum = 0;
         for (size_t i = 0; i< wp.size()-1; i++)
@@ -8655,9 +8663,11 @@ planning_result_ptr HUMPlanner::plan_waypoints(hump_params &params, vector <wp_s
           for(int i=0;i<joints_arm;i++){
              //get the trajectory, velocity and acceleration for each joint
              pi_value = this->get_pi_eq(tf, wp_time,wp_traj_spec.x_wp_dof[i],wp_traj_spec.xf_dof[i],wp_traj_spec.x0_dof[i]);
-             this->compose(tf,steps,wp_time,pi_value,wp_traj_spec.xf_dof[i],wp_traj_spec.x0_dof[i],i,pos,vel,acc,wp_pos,wp_vel,wp_acc);
+             this->compose(tf,steps,wp_time,pi_value,wp_traj_spec.xf_dof[i],wp_traj_spec.x0_dof[i],i,pos,vel,acc,wp_pos,wp_vel, pos_wp);
              //save the position, velocity and acceleration at each waypoint
           }
+          res->pos_wp = pos_wp[0];
+          res->calcWP = wp_pos;
           res->time_steps.push_back(timestep);
           res->trajectory_stages.push_back(pos);res->trajectory_descriptions.push_back("plan");
           res->velocity_stages.push_back(vel);
